@@ -9,8 +9,18 @@
 <div class="container">
     <h1>Watch Party: {{ party.name }}</h1>
 
+    <!-- Screen Sharing Section -->
+    <div class="screen-share-section">
+        <h3>Screen Sharing</h3>
+        <button id="startShare">Start Screen Share with Audio</button>
+        <button id="stopShare" disabled>Stop Screen Share</button>
+        <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto; margin-top: 10px; background-color: black;"></video>
+    </div>
+
     <!-- Video Player -->
-    <iframe src="{{ party.video_url }}" width="800" height="450" allowfullscreen></iframe>
+    <div class="video-player-section">
+        <iframe src="{{ party.video_url }}" width="800" height="450" allowfullscreen></iframe>
+    </div>
 
     <!-- Chat Section -->
     <div class="chat-container">
@@ -19,12 +29,6 @@
         <input type="text" id="message" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
-
-    <!-- Screen Sharing Section -->
-    <h3>Screen Sharing</h3>
-    <button id="startShare">Start Screen Share</button>
-    <button id="stopShare" disabled>Stop Screen Share</button>
-    <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto;"></video>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
@@ -56,7 +60,7 @@
         socket.emit('leave', { room: room });
     };
 
-    // Screen sharing logic
+    // Screen sharing logic with audio
     let screenStream;
     const sharedScreen = document.getElementById('sharedScreen');
     const startShareBtn = document.getElementById('startShare');
@@ -64,8 +68,28 @@
 
     startShareBtn.addEventListener('click', async () => {
         try {
-            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-            sharedScreen.srcObject = screenStream;
+            // Capture screen with system audio and microphone
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: { displaySurface: 'monitor' },
+                audio: {
+                    autoGainControl: false,
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    suppressLocalAudioPlayback: false
+                }
+            });
+
+            // Capture microphone audio separately
+            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // Combine screen audio and microphone audio
+            const combinedStream = new MediaStream([
+                ...screenStream.getVideoTracks(),
+                ...screenStream.getAudioTracks(),
+                ...micStream.getAudioTracks()
+            ]);
+
+            sharedScreen.srcObject = combinedStream;
             startShareBtn.disabled = true;
             stopShareBtn.disabled = false;
         } catch (err) {
