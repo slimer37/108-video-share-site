@@ -5,6 +5,14 @@
 {% block content %}
 <h2>Welcome, {{ user.username }}!</h2>
 
+<!-- Navigation Tabs -->
+<nav>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('watch_party') }}">Watch Party</a>
+    <a href="{{ url_for('friends') }}">Friends</a> <!-- New Friends Tab -->
+    <a href="{{ url_for('logout') }}">Logout</a>
+</nav>
+
 <h3>Create a Post</h3>
 <form method="POST">
     {{ form.hidden_tag() }}

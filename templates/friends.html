@@ -11,7 +11,12 @@
     <!-- List of Friends -->
     <ul>
         {% for friend in friends %}
-            <li>{{ friend.username }}</li>
+            <li>
+                {{ friend.username }}
+                <form action="{{ url_for('remove_friend', user_id=friend.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" style="background-color: red; color: white;">Remove Friend</button>
+                </form>
+            </li>
         {% else %}
             <li>You have no friends yet.</li>
         {% endfor %}
@@ -22,9 +27,13 @@
         {% for user in all_users %}
             <li>
                 {{ user.username }}
-                <form action="{{ url_for('add_friend', friend_id=user.id) }}" method="POST" style="display:inline;">
-                    <button type="submit">Add Friend</button>
-                </form>
+                {% if user not in friends %}
+                    <form action="{{ url_for('add_friend', friend_id=user.id) }}" method="POST" style="display:inline;">
+                        <button type="submit">Add Friend</button>
+                    </form>
+                {% else %}
+                    <span style="color: green; font-weight: bold;">Friend</span>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
