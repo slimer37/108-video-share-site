@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2>Welcome, {{ user.username }}!</h2>
+
+<h3>Create a Post</h3>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.content.label }}<br>
+        {{ form.content(rows=4, cols=50) }}
+    </div>
+    <div>
+        {{ form.is_public.label }} {{ form.is_public }}
+    </div>
+    <button type="submit">Post</button>
+</form>
+
+<h3>All Public Posts</h3>
+<ul>
+    {% for post in posts %}
+    <li><strong>{{ post.user.username }}:</strong> {{ post.content }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

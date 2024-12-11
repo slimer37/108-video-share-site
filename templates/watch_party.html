@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Watch Party</title>
+</head>
+<body>
+<div class="container">
+    <h1>Watch Party: {{ party.name }}</h1>
+    <iframe src="{{ party.video_url }}" width="800" height="450" allowfullscreen></iframe>
+
+    <!-- Chat Section -->
+    <div class="chat-container">
+        <h3>Chat</h3>
+        <div id="chat-box" class="chat-box"></div>
+        <input type="text" id="message" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <!-- Screen Sharing Section -->
+    <h3>Screen Sharing</h3>
+    <button id="startShare">Start Screen Share</button>
+    <button id="stopShare" disabled>Stop Screen Share</button>
+    <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto;"></video>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    const socket = io.connect();
+    const room = "{{ party.id }}";  // Unique room ID based on party ID
+
+    // Join the room
+    socket.emit('join', { room: room });
+
+    // Listen for messages
+    socket.on('message', (msg) => {
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML += `<p>${msg}</p>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    // Send message function
+    function sendMessage() {
+        const message = document.getElementById('message').value;
+        socket.emit('message', { room: room, message: message });
+        document.getElementById('message').value = '';
+    }
+
+    // Leave the room when the page is unloaded
+    window.onbeforeunload = () => {
+        socket.emit('leave', { room: room });
+    };
+
+    // Screen sharing logic
+    let screenStream;
+    const sharedScreen = document.getElementById('sharedScreen');
+    const startShareBtn = document.getElementById('startShare');
+    const stopShareBtn = document.getElementById('stopShare');
+
+    startShareBtn.addEventListener('click', async () => {
+        try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            sharedScreen.srcObject = screenStream;
+            startShareBtn.disabled = true;
+            stopShareBtn.disabled = false;
+        } catch (err) {
+            console.error('Error sharing screen:', err);
+        }
+    });
+
+    stopShareBtn.addEventListener('click', () => {
+        if (screenStream) {
+            screenStream.getTracks().forEach(track => track.stop());
+            sharedScreen.srcObject = null;
+            startShareBtn.disabled = false;
+            stopShareBtn.disabled = true;
+        }
+    });
+</script>
+</body>
+</html>

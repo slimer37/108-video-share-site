@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Profile</title>
+</head>
+<body>
+<div class="container">
+    <h1>Profile: {{ user.username }}</h1>
+    <form method="POST" action="{{ url_for('update_profile') }}">
+        {{ form.hidden_tag() }}
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{ user.email }}">
+        <label for="password">New Password:</label>
+        <input type="password" id="password" name="password" placeholder="Leave blank to keep unchanged">
+        <button type="submit">Update Profile</button>
+    </form>
+</div>
+</body>
+</html>
