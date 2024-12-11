@@ -1,12 +1,15 @@
+<!-- templates/watch_party.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Watch Party</title>
+    <title>Watch Party: {{ party.name }}</title>
 </head>
 <body>
 <div class="container">
     <h1>Watch Party: {{ party.name }}</h1>
+
+    <!-- Video Player -->
     <iframe src="{{ party.video_url }}" width="800" height="450" allowfullscreen></iframe>
 
     <!-- Chat Section -->
@@ -42,8 +45,10 @@
     // Send message function
     function sendMessage() {
         const message = document.getElementById('message').value;
-        socket.emit('message', { room: room, message: message });
-        document.getElementById('message').value = '';
+        if (message.trim() !== '') {
+            socket.emit('message', { room: room, message: message });
+            document.getElementById('message').value = '';
+        }
     }
 
     // Leave the room when the page is unloaded
@@ -77,5 +82,7 @@
         }
     });
 </script>
+
+<a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 </body>
 </html>

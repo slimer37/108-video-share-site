@@ -69,13 +69,17 @@ def dashboard():
 @login_required
 def watch_party():
     form = WatchPartyForm()
+    party = None
+
     if form.validate_on_submit():
         party = WatchParty(name=form.name.data, video_url=form.video_url.data, host=current_user)
         db.session.add(party)
         db.session.commit()
         flash('Watch party created!')
-        return redirect(url_for('dashboard'))
-    return render_template('watch_party.html', form=form)
+        return redirect(url_for('watch_party'))
+
+    # If no party is created yet, render the form without a party object
+    return render_template('watch_party.html', form=form, party=party)
 
 # SocketIO Events for Real-Time Chat
 @socketio.on('join')
@@ -95,6 +99,35 @@ def handle_message(data):
     room = data['room']
     message = data['message']
     send(f"{current_user.username}: {message}", to=room)
+
+@app.route('/friends')
+@login_required
+def friends():
+    friends_list = current_user.friends
+    all_users = User.query.filter(User.id != current_user.id).all()
+    return render_template('friends.html', friends=friends_list, all_users=all_users)
+
+@app.route('/add-friend/<int:friend_id>', methods=['POST'])
+@login_required
+def add_friend(friend_id):
+    friend = User.query.get_or_404(friend_id)
+    if friend not in current_user.friends:
+        current_user.friends.append(friend)
+        db.session.commit()
+        flash(f'You are now friends with {friend.username}!')
+    else:
+        flash(f'You are already friends with {friend.username}.')
+    return redirect(url_for('friends'))
+
+@app.route('/remove-friend/<int:user_id>', methods=['POST'])
+@login_required
+def remove_friend(user_id):
+    friend = User.query.get(user_id)
+    if friend in current_user.friends:
+        current_user.friends.remove(friend)
+        db.session.commit()
+        flash(f'{friend.username} has been removed from your friends list.')
+    return redirect(url_for('friends'))
 
 if __name__ == '__main__':
     with app.app_context():
