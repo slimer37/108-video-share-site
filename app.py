@@ -1,7 +1,7 @@
-from flask import Flask, render_template, redirect, url_for, flash, request, make_response
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from flask_socketio import SocketIO, join_room, leave_room, send
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Post, WatchParty
 from forms import LoginForm, RegisterForm, PostForm, WatchPartyForm
@@ -69,16 +69,31 @@ def dashboard():
 @login_required
 def watch_party():
     form = WatchPartyForm()
-    party = None
+
+    # Fetch the latest watch party for the current user
+    party = WatchParty.query.filter_by(host_id=current_user.id).order_by(WatchParty.id.desc()).first()
 
     if form.validate_on_submit():
-        party = WatchParty(name=form.name.data, video_url=form.video_url.data, host=current_user)
+        # Create and save a new watch party
+        party = WatchParty(
+            name=form.name.data,
+            video_url=form.video_url.data,
+            host=current_user,
+            is_private=form.is_private.data,
+            description=form.description.data
+        )
         db.session.add(party)
-        db.session.commit()
+        db.session.commit()  # Ensure the party is committed to the database
+
         flash('Watch party created!')
         return redirect(url_for('watch_party'))
 
-    # If no party is created yet, render the form without a party object
+    # If no party exists, create a placeholder
+    if not party:
+        party = WatchParty(name="New Watch Party", video_url="", host=current_user)
+        db.session.add(party)
+        db.session.commit()  # Commit the placeholder to generate an ID
+
     return render_template('watch_party.html', form=form, party=party)
 
 # SocketIO Events for Real-Time Chat
@@ -99,6 +114,22 @@ def handle_message(data):
     room = data['room']
     message = data['message']
     send(f"{current_user.username}: {message}", to=room)
+
+@socketio.on('hostRoom')
+def handle_host_room(data):
+    room = data['room']
+    is_private = data['isPrivate']
+    watch_party = WatchParty.query.get(room)
+    if watch_party:
+        watch_party.is_private = is_private
+        db.session.commit()
+        emit('roomHosted', {'message': f"Room hosted as {'Private' if is_private else 'Public'}."}, broadcast=True)
+
+@socketio.on('screenShare')
+def handle_screen_share(data):
+    room = data['room']
+    track = data['track']
+    emit('screenShare', {'track': track}, room=room, include_self=False)
 
 @app.route('/friends')
 @login_required
@@ -128,6 +159,30 @@ def remove_friend(user_id):
         db.session.commit()
         flash(f'{friend.username} has been removed from your friends list.')
     return redirect(url_for('friends'))
+
+@app.route('/join-room/<int:room_id>')
+@login_required
+def join_room_page(room_id):
+    party = WatchParty.query.get_or_404(room_id)
+    if party.is_private and current_user not in party.host.friends:
+        flash('This room is private. Only friends can join.')
+        return redirect(url_for('dashboard'))
+    return render_template('watch_party.html', party=party)
+
+@app.route('/available-rooms')
+@login_required
+def available_rooms():
+    search_query = request.args.get('search', '')
+    friends_only = request.args.get('friends_only', False)
+
+    query = WatchParty.query.join(User).filter(User.username.ilike(f"%{search_query}%"))
+
+    if friends_only:
+        query = query.filter(User.id.in_([friend.id for friend in current_user.friends]))
+
+    rooms = query.all()
+
+    return render_template('available_rooms.html', rooms=rooms)
 
 if __name__ == '__main__':
     with app.app_context():

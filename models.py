@@ -1,4 +1,3 @@
-# models.py
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
@@ -35,3 +34,5 @@ class WatchParty(db.Model):
     name = db.Column(db.String(150), nullable=False)
     video_url = db.Column(db.String(300), nullable=False)
     host_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_private = db.Column(db.Boolean, default=False)  # Privacy setting
+    description = db.Column(db.String(500), nullable=True)  # Room description

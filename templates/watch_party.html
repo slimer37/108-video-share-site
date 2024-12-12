@@ -9,6 +9,14 @@
 <div class="container">
     <h1>Watch Party: {{ party.name }}</h1>
 
+    <!-- Room Controls -->
+    <div class="room-controls" style="margin-bottom: 20px;">
+        <button id="hostRoomBtn">Host Room</button>
+        <button id="copyLinkBtn">Copy Invite Link</button>
+        <label for="privacyToggle">Private Room:</label>
+        <input type="checkbox" id="privacyToggle">
+    </div>
+
     <!-- Screen Sharing Section -->
     <div class="screen-share-section">
         <h3>Screen Sharing</h3>
@@ -18,14 +26,15 @@
     </div>
 
     <!-- Video Player -->
-    <div class="video-player-section">
+    <div class="video-player-section" style="margin-top: 20px;">
+        <h3>Video Player</h3>
         <iframe src="{{ party.video_url }}" width="800" height="450" allowfullscreen></iframe>
     </div>
 
     <!-- Chat Section -->
-    <div class="chat-container">
+    <div class="chat-container" style="margin-top: 20px;">
         <h3>Chat</h3>
-        <div id="chat-box" class="chat-box"></div>
+        <div id="chat-box" class="chat-box" style="height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
         <input type="text" id="message" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
@@ -34,7 +43,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
     const socket = io.connect();
-    const room = "{{ party.id }}";  // Unique room ID based on party ID
+    const room = "{{ party.id }}";
 
     // Join the room
     socket.emit('join', { room: room });
@@ -104,6 +113,24 @@
             startShareBtn.disabled = false;
             stopShareBtn.disabled = true;
         }
+    });
+
+    document.getElementById('copyLinkBtn').addEventListener('click', () => {
+        if ("{{ party.id }}") {
+            const inviteLink = `${window.location.origin}/join-room/{{ party.id }}`;
+            navigator.clipboard.writeText(inviteLink).then(() => {
+                alert('Invite link copied to clipboard!');
+            });
+        } else {
+            alert('Error: Room ID is missing.');
+        }
+    });
+
+    // Host room function
+    document.getElementById('hostRoomBtn').addEventListener('click', () => {
+        const isPrivate = document.getElementById('privacyToggle').checked;
+        socket.emit('hostRoom', { room: room, isPrivate: isPrivate });
+        alert(`Room hosted as ${isPrivate ? 'Private' : 'Public'}`);
     });
 </script>
 

@@ -1,0 +1,34 @@
+<!-- templates/available_rooms.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Join a Room</title>
+</head>
+<body>
+<h1>Available Rooms</h1>
+
+<form method="GET">
+    <input type="text" name="search" placeholder="Search by host name..." value="{{ request.args.get('search', '') }}">
+    <label>
+        <input type="checkbox" name="friends_only" {% if request.args.get('friends_only') %}checked{% endif %}>
+        Friends-Only Rooms
+    </label>
+    <button type="submit">Search</button>
+</form>
+
+<ul>
+    {% for room in rooms %}
+        <li>
+            <strong>{{ room.name }}</strong> - Hosted by {{ room.host.username }}<br>
+            Description: {{ room.description or 'No description' }}<br>
+            <a href="{{ url_for('join_room_page', room_id=room.id) }}">Join Room</a>
+        </li>
+    {% else %}
+        <li>No rooms found.</li>
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
