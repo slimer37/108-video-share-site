@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ 'Banned' if user.is_banned else 'Active' }}</td>
+                <td>
+                    <!-- Ban Button -->
+                    {% if not user.is_banned %}
+                    <form action="{{ url_for('admin.ban_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                        <button type="submit">Ban</button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Unban Button -->
+                    {% if user.is_banned %}
+                    <form action="{{ url_for('admin.unban_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                        <button type="submit">Unban</button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Delete Button -->
+                    <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

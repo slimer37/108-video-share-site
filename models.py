@@ -1,4 +1,3 @@
-# models.py
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
@@ -17,6 +16,8 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    is_banned = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post', backref='user', lazy=True)
     watch_parties = db.relationship('WatchParty', backref='host', lazy=True)
     friends = db.relationship('User', secondary=friends_table,

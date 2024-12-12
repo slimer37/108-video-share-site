@@ -1,10 +1,11 @@
-from flask import Flask, render_template, redirect, url_for, flash, request, make_response
+from flask import Flask, render_template, redirect, url_for, flash, request, abort, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, join_room, leave_room, send
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Post, WatchParty
 from forms import LoginForm, RegisterForm, PostForm, WatchPartyForm
+from admin_routes import admin_bp, block_banned  # Import the admin blueprint
 
 app = Flask(__name__)
 app.config.from_object('config.Config')
@@ -19,6 +20,48 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Register the admin blueprint
+app.register_blueprint(admin_bp)
+
+def seed_data():
+    """Seed the database with initial data."""
+    # Drop and recreate all tables (for development only)
+    db.drop_all()
+    db.create_all()
+
+    # Create an admin user
+    admin_user = User(
+        username='admin',
+        email='admin@example.com',
+        password=generate_password_hash('admin123', method='pbkdf2:sha256'),
+        is_admin=True
+    )
+    db.session.add(admin_user)
+
+    # Create sample users
+    user1 = User(
+        username='testuser1',
+        email='testuser1@example.com',
+        password=generate_password_hash('password1', method='pbkdf2:sha256')
+    )
+    user2 = User(
+        username='testuser2',
+        email='testuser2@example.com',
+        password=generate_password_hash('password2', method='pbkdf2:sha256')
+    )
+    db.session.add_all([user1, user2])
+
+    # Commit seeded data to the database
+    db.session.commit()
+    print("Database seeded with initial data!")
+
+@app.before_request
+def check_banned_status():
+    if current_user.is_authenticated and current_user.is_banned:
+        logout_user()
+        flash('Your account is banned. Please contact support.', 'danger')
+        return redirect(url_for('login'))
+
 @app.route('/')
 def home():
     return redirect(url_for('login'))
@@ -27,7 +70,7 @@ def home():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data)
+        hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
@@ -41,7 +84,12 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and check_password_hash(user.password, form.password.data):
+            if user.is_banned:
+                flash('Your account is banned. Please contact support.', 'danger')
+                return redirect(url_for('login'))
             login_user(user)
+            if user.is_admin:
+                return redirect(url_for('admin.admin_page'))
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password.')
@@ -55,6 +103,7 @@ def logout():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
+@block_banned
 def dashboard():
     form = PostForm()
     if form.validate_on_submit():
@@ -67,6 +116,7 @@ def dashboard():
 
 @app.route('/watch-party', methods=['GET', 'POST'])
 @login_required
+@block_banned
 def watch_party():
     form = WatchPartyForm()
     party = None
@@ -78,10 +128,8 @@ def watch_party():
         flash('Watch party created!')
         return redirect(url_for('watch_party'))
 
-    # If no party is created yet, render the form without a party object
     return render_template('watch_party.html', form=form, party=party)
 
-# SocketIO Events for Real-Time Chat
 @socketio.on('join')
 def handle_join(data):
     room = data['room']
@@ -102,6 +150,7 @@ def handle_message(data):
 
 @app.route('/friends')
 @login_required
+@block_banned
 def friends():
     friends_list = current_user.friends
     all_users = User.query.filter(User.id != current_user.id).all()
@@ -132,5 +181,6 @@ def remove_friend(user_id):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        seed_data()
         print("Database initialized successfully!")
     socketio.run(app, debug=True)
