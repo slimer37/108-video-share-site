@@ -25,12 +25,6 @@
         <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto; margin-top: 10px; background-color: black;"></video>
     </div>
 
-    <!-- Video Player -->
-    <div class="video-player-section" style="margin-top: 20px;">
-        <h3>Video Player</h3>
-        <iframe src="{{ party.video_url }}" width="800" height="450" allowfullscreen></iframe>
-    </div>
-
     <!-- Chat Section -->
     <div class="chat-container" style="margin-top: 20px;">
         <h3>Chat</h3>
@@ -44,18 +38,21 @@
 <script>
     const socket = io.connect();
     const room = "{{ party.id }}";
+    let peerConnection;
+    const sharedScreen = document.getElementById('sharedScreen');
+    const startShareBtn = document.getElementById('startShare');
+    const stopShareBtn = document.getElementById('stopShare');
+    const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     // Join the room
     socket.emit('join', { room: room });
 
-    // Listen for messages
     socket.on('message', (msg) => {
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML += `<p>${msg}</p>`;
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    // Send message function
     function sendMessage() {
         const message = document.getElementById('message').value;
         if (message.trim() !== '') {
@@ -64,73 +61,74 @@
         }
     }
 
-    // Leave the room when the page is unloaded
     window.onbeforeunload = () => {
         socket.emit('leave', { room: room });
     };
 
-    // Screen sharing logic with audio
-    let screenStream;
-    const sharedScreen = document.getElementById('sharedScreen');
-    const startShareBtn = document.getElementById('startShare');
-    const stopShareBtn = document.getElementById('stopShare');
-
+    // Start screen sharing with WebRTC
     startShareBtn.addEventListener('click', async () => {
         try {
-            // Capture screen with system audio and microphone
-            screenStream = await navigator.mediaDevices.getDisplayMedia({
-                video: { displaySurface: 'monitor' },
-                audio: {
-                    autoGainControl: false,
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    suppressLocalAudioPlayback: false
-                }
-            });
-
-            // Capture microphone audio separately
-            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-            // Combine screen audio and microphone audio
-            const combinedStream = new MediaStream([
-                ...screenStream.getVideoTracks(),
-                ...screenStream.getAudioTracks(),
-                ...micStream.getAudioTracks()
-            ]);
-
-            sharedScreen.srcObject = combinedStream;
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            sharedScreen.srcObject = stream;
             startShareBtn.disabled = true;
             stopShareBtn.disabled = false;
+
+            peerConnection = new RTCPeerConnection(configuration);
+            stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit('ice-candidate', { room: room, candidate: event.candidate });
+                }
+            };
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('offer', { room: room, offer: offer });
         } catch (err) {
             console.error('Error sharing screen:', err);
         }
     });
 
     stopShareBtn.addEventListener('click', () => {
-        if (screenStream) {
-            screenStream.getTracks().forEach(track => track.stop());
+        if (sharedScreen.srcObject) {
+            sharedScreen.srcObject.getTracks().forEach(track => track.stop());
             sharedScreen.srcObject = null;
             startShareBtn.disabled = false;
             stopShareBtn.disabled = true;
+            if (peerConnection) {
+                peerConnection.close();
+            }
         }
     });
 
-    document.getElementById('copyLinkBtn').addEventListener('click', () => {
-        if ("{{ party.id }}") {
-            const inviteLink = `${window.location.origin}/join-room/{{ party.id }}`;
-            navigator.clipboard.writeText(inviteLink).then(() => {
-                alert('Invite link copied to clipboard!');
-            });
-        } else {
-            alert('Error: Room ID is missing.');
-        }
+    // Handle incoming offers
+    socket.on('offer', async (data) => {
+        peerConnection = new RTCPeerConnection(configuration);
+        peerConnection.ontrack = event => {
+            sharedScreen.srcObject = event.streams[0];
+        };
+
+        peerConnection.onicecandidate = event => {
+            if (event.candidate) {
+                socket.emit('ice-candidate', { room: room, candidate: event.candidate });
+            }
+        };
+
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('answer', { room: room, answer: answer });
     });
 
-    // Host room function
-    document.getElementById('hostRoomBtn').addEventListener('click', () => {
-        const isPrivate = document.getElementById('privacyToggle').checked;
-        socket.emit('hostRoom', { room: room, isPrivate: isPrivate });
-        alert(`Room hosted as ${isPrivate ? 'Private' : 'Public'}`);
+    // Handle incoming answers
+    socket.on('answer', (data) => {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    });
+
+    // Handle incoming ICE candidates
+    socket.on('ice-candidate', (data) => {
+        peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
     });
 </script>
 

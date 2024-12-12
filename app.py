@@ -131,6 +131,24 @@ def handle_screen_share(data):
     track = data['track']
     emit('screenShare', {'track': track}, room=room, include_self=False)
 
+@socketio.on('offer')
+def handle_offer(data):
+    room = data['room']
+    offer = data['offer']
+    emit('offer', {'offer': offer}, room=room, include_self=False)
+
+@socketio.on('answer')
+def handle_answer(data):
+    room = data['room']
+    answer = data['answer']
+    emit('answer', {'answer': answer}, room=room, include_self=False)
+
+@socketio.on('ice-candidate')
+def handle_ice_candidate(data):
+    room = data['room']
+    candidate = data['candidate']
+    emit('ice-candidate', {'candidate': candidate}, room=room, include_self=False)
+
 @app.route('/friends')
 @login_required
 def friends():
