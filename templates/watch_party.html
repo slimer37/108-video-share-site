@@ -22,6 +22,7 @@
         <h3>Screen Sharing</h3>
         <button id="startShare">Start Screen Share with Audio</button>
         <button id="stopShare" disabled>Stop Screen Share</button>
+        <button id="muteMicBtn">Mute Mic</button>
         <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto; margin-top: 10px; background-color: black;"></video>
     </div>
 
@@ -39,9 +40,11 @@
     const socket = io.connect();
     const room = "{{ party.id }}";
     let peerConnection;
+    let micTrack;  // To keep track of the microphone track
     const sharedScreen = document.getElementById('sharedScreen');
     const startShareBtn = document.getElementById('startShare');
     const stopShareBtn = document.getElementById('stopShare');
+    const muteMicBtn = document.getElementById('muteMicBtn');
     const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     // Join the room
@@ -76,6 +79,11 @@
             peerConnection = new RTCPeerConnection(configuration);
             stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
 
+            // Capture the microphone audio track separately
+            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            micTrack = micStream.getAudioTracks()[0];
+            peerConnection.addTrack(micTrack, micStream);
+
             peerConnection.onicecandidate = event => {
                 if (event.candidate) {
                     socket.emit('ice-candidate', { room: room, candidate: event.candidate });
@@ -99,6 +107,21 @@
             if (peerConnection) {
                 peerConnection.close();
             }
+        }
+    });
+
+    // Mute/Unmute microphone
+    muteMicBtn.addEventListener('click', () => {
+        if (micTrack) {
+            if (micTrack.enabled) {
+                micTrack.enabled = false;
+                muteMicBtn.textContent = 'Unmute Mic';
+            } else {
+                micTrack.enabled = true;
+                muteMicBtn.textContent = 'Mute Mic';
+            }
+        } else {
+            alert('Microphone not available.');
         }
     });
 
