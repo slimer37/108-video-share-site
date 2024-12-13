@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Post, WatchParty
+from models import db, User, Post, WatchParty, FriendRequest
 from forms import LoginForm, RegisterForm, PostForm, WatchPartyForm
 
 app = Flask(__name__)
@@ -177,6 +177,55 @@ def remove_friend(user_id):
         db.session.commit()
         flash(f'{friend.username} has been removed from your friends list.')
     return redirect(url_for('friends'))
+
+
+@app.route('/send-friend-request/<int:receiver_id>', methods=['POST'])
+@login_required
+def send_friend_request(receiver_id):
+    receiver = User.query.get_or_404(receiver_id)
+    existing_request = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=receiver_id).first()
+
+    if existing_request:
+        flash('Friend request already sent.')
+    else:
+        friend_request = FriendRequest(sender_id=current_user.id, receiver_id=receiver_id)
+        db.session.add(friend_request)
+        db.session.commit()
+        flash(f'Friend request sent to {receiver.username}.')
+
+    return redirect(url_for('friends'))
+
+@app.route('/accept-friend-request/<int:request_id>', methods=['POST'])
+@login_required
+def accept_friend_request(request_id):
+    friend_request = FriendRequest.query.get_or_404(request_id)
+
+    if friend_request.receiver_id == current_user.id:
+        # Add each other as friends
+        sender = User.query.get(friend_request.sender_id)
+        current_user.friends.append(sender)
+        db.session.delete(friend_request)
+        db.session.commit()
+        flash(f'You are now friends with {sender.username}.')
+    else:
+        flash('Invalid friend request.')
+
+    return redirect(url_for('friends'))
+
+@app.route('/reject-friend-request/<int:request_id>', methods=['POST'])
+@login_required
+def reject_friend_request(request_id):
+    friend_request = FriendRequest.query.get_or_404(request_id)
+
+    if friend_request.receiver_id == current_user.id:
+        db.session.delete(friend_request)
+        db.session.commit()
+        flash('Friend request rejected.')
+    else:
+        flash('Invalid friend request.')
+
+    return redirect(url_for('friends'))
+
 
 @app.route('/join-room/<int:room_id>')
 @login_required

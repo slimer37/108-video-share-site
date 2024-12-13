@@ -1,4 +1,3 @@
-<!-- templates/friends.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,18 +21,31 @@
         {% endfor %}
     </ul>
 
+    <h2>Pending Friend Requests</h2>
+    <ul>
+        {% for request in current_user.received_requests %}
+            <li>
+                {{ request.sender.username }}
+                <form action="{{ url_for('accept_friend_request', request_id=request.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" style="background-color: green; color: white;">Accept</button>
+                </form>
+                <form action="{{ url_for('reject_friend_request', request_id=request.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" style="background-color: red; color: white;">Reject</button>
+                </form>
+            </li>
+        {% else %}
+            <li>No pending friend requests.</li>
+        {% endfor %}
+    </ul>
+
     <h2>Add Friends</h2>
     <ul>
         {% for user in all_users %}
             <li>
                 {{ user.username }}
-                {% if user not in friends %}
-                    <form action="{{ url_for('add_friend', friend_id=user.id) }}" method="POST" style="display:inline;">
-                        <button type="submit">Add Friend</button>
-                    </form>
-                {% else %}
-                    <span style="color: green; font-weight: bold;">Friend</span>
-                {% endif %}
+                <form action="{{ url_for('send_friend_request', receiver_id=user.id) }}" method="POST" style="display:inline;">
+                    <button type="submit">Send Friend Request</button>
+                </form>
             </li>
         {% endfor %}
     </ul>
