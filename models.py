@@ -24,6 +24,16 @@ class User(UserMixin, db.Model):
                               primaryjoin=id == friends_table.c.user_id,
                               secondaryjoin=id == friends_table.c.friend_id,
                               backref='friend_of')
+    received_requests = db.relationship('FriendRequest', foreign_keys='FriendRequest.receiver_id',
+                                        backref='receiver', lazy=True)
+    sent_requests = db.relationship('FriendRequest', foreign_keys='FriendRequest.sender_id',
+                                    backref='sender', lazy=True)
+
+class FriendRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(50), default='pending')  # Possible statuses: 'pending', 'accepted', 'rejected'
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,3 +46,5 @@ class WatchParty(db.Model):
     name = db.Column(db.String(150), nullable=False)
     video_url = db.Column(db.String(300), nullable=False)
     host_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_private = db.Column(db.Boolean, default=False)  # Privacy setting
+    description = db.Column(db.String(500), nullable=True)  # Room description

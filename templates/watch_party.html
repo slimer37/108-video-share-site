@@ -9,40 +9,53 @@
 <div class="container">
     <h1>Watch Party: {{ party.name }}</h1>
 
-    <!-- Video Player -->
-    <iframe src="{{ party.video_url }}" width="800" height="450" allowfullscreen></iframe>
-
-    <!-- Chat Section -->
-    <div class="chat-container">
-        <h3>Chat</h3>
-        <div id="chat-box" class="chat-box"></div>
-        <input type="text" id="message" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
+    <!-- Room Controls -->
+    <div class="room-controls" style="margin-bottom: 20px;">
+        <button id="hostRoomBtn">Host Room</button>
+        <button id="copyLinkBtn">Copy Invite Link</button>
+        <label for="privacyToggle">Private Room:</label>
+        <input type="checkbox" id="privacyToggle">
     </div>
 
     <!-- Screen Sharing Section -->
-    <h3>Screen Sharing</h3>
-    <button id="startShare">Start Screen Share</button>
-    <button id="stopShare" disabled>Stop Screen Share</button>
-    <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto;"></video>
+    <div class="screen-share-section">
+        <h3>Screen Sharing</h3>
+        <button id="startShare">Start Screen Share with Audio</button>
+        <button id="stopShare" disabled>Stop Screen Share</button>
+        <button id="muteMicBtn">Mute Mic</button>
+        <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto; margin-top: 10px; background-color: black;"></video>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="chat-container" style="margin-top: 20px;">
+        <h3>Chat</h3>
+        <div id="chat-box" class="chat-box" style="height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+        <input type="text" id="message" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
     const socket = io.connect();
-    const room = "{{ party.id }}";  // Unique room ID based on party ID
+    const room = "{{ party.id }}";
+    let peerConnection;
+    let micTrack;  // To keep track of the microphone track
+    const sharedScreen = document.getElementById('sharedScreen');
+    const startShareBtn = document.getElementById('startShare');
+    const stopShareBtn = document.getElementById('stopShare');
+    const muteMicBtn = document.getElementById('muteMicBtn');
+    const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
     // Join the room
     socket.emit('join', { room: room });
 
-    // Listen for messages
     socket.on('message', (msg) => {
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML += `<p>${msg}</p>`;
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    // Send message function
     function sendMessage() {
         const message = document.getElementById('message').value;
         if (message.trim() !== '') {
@@ -51,35 +64,94 @@
         }
     }
 
-    // Leave the room when the page is unloaded
     window.onbeforeunload = () => {
         socket.emit('leave', { room: room });
     };
 
-    // Screen sharing logic
-    let screenStream;
-    const sharedScreen = document.getElementById('sharedScreen');
-    const startShareBtn = document.getElementById('startShare');
-    const stopShareBtn = document.getElementById('stopShare');
-
+    // Start screen sharing with WebRTC
     startShareBtn.addEventListener('click', async () => {
         try {
-            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-            sharedScreen.srcObject = screenStream;
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            sharedScreen.srcObject = stream;
             startShareBtn.disabled = true;
             stopShareBtn.disabled = false;
+
+            peerConnection = new RTCPeerConnection(configuration);
+            stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+            // Capture the microphone audio track separately
+            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            micTrack = micStream.getAudioTracks()[0];
+            peerConnection.addTrack(micTrack, micStream);
+
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    socket.emit('ice-candidate', { room: room, candidate: event.candidate });
+                }
+            };
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('offer', { room: room, offer: offer });
         } catch (err) {
             console.error('Error sharing screen:', err);
         }
     });
 
     stopShareBtn.addEventListener('click', () => {
-        if (screenStream) {
-            screenStream.getTracks().forEach(track => track.stop());
+        if (sharedScreen.srcObject) {
+            sharedScreen.srcObject.getTracks().forEach(track => track.stop());
             sharedScreen.srcObject = null;
             startShareBtn.disabled = false;
             stopShareBtn.disabled = true;
+            if (peerConnection) {
+                peerConnection.close();
+            }
         }
+    });
+
+    // Mute/Unmute microphone
+    muteMicBtn.addEventListener('click', () => {
+        if (micTrack) {
+            if (micTrack.enabled) {
+                micTrack.enabled = false;
+                muteMicBtn.textContent = 'Unmute Mic';
+            } else {
+                micTrack.enabled = true;
+                muteMicBtn.textContent = 'Mute Mic';
+            }
+        } else {
+            alert('Microphone not available.');
+        }
+    });
+
+    // Handle incoming offers
+    socket.on('offer', async (data) => {
+        peerConnection = new RTCPeerConnection(configuration);
+        peerConnection.ontrack = event => {
+            sharedScreen.srcObject = event.streams[0];
+        };
+
+        peerConnection.onicecandidate = event => {
+            if (event.candidate) {
+                socket.emit('ice-candidate', { room: room, candidate: event.candidate });
+            }
+        };
+
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('answer', { room: room, answer: answer });
+    });
+
+    // Handle incoming answers
+    socket.on('answer', (data) => {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    });
+
+    // Handle incoming ICE candidates
+    socket.on('ice-candidate', (data) => {
+        peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
     });
 </script>
 

@@ -21,4 +21,6 @@ class PostForm(FlaskForm):
 class WatchPartyForm(FlaskForm):
     name = StringField('Party Name', validators=[DataRequired()])
     video_url = URLField('Video URL', validators=[DataRequired(), URL()])
+    is_private = BooleanField('Private Room')  # Toggle for privacy
+    description = TextAreaField('Room Description', validators=[Length(max=500)])
     submit = SubmitField('Create Watch Party')
