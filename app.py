@@ -1,21 +1,58 @@
+import os
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from models import db, User, Post, WatchParty, FriendRequest
 from forms import LoginForm, RegisterForm, PostForm, WatchPartyForm
-from admin_routes import admin_bp, block_banned  # Import the admin blueprint
+from admin_routes import admin_bp, block_banned
 
+# Initialize Flask app
 app = Flask(__name__)
 app.config.from_object('config.Config')
 db.init_app(app)
 socketio = SocketIO(app)
+migrate = Migrate(app, db)
 
+# Login manager setup
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# File upload configuration
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure the uploads folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Helper function to check allowed file types
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Route to handle image uploads
+@app.route("/upload-image", methods=["POST"])
+@login_required
+def upload_image():
+    if "image" not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+
+    file = request.files["image"]
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(filepath)
+        image_url = f"/static/uploads/{filename}"
+        return jsonify({"image_url": image_url}), 200
+
+    return jsonify({"error": "Invalid file type"}), 400
+
+# Load user for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -23,9 +60,9 @@ def load_user(user_id):
 # Register the admin blueprint
 app.register_blueprint(admin_bp)
 
+# Seed database with initial data
 def seed_data():
     """Seed the database with initial data."""
-    # Drop and recreate all tables (for development only)
     db.drop_all()
     db.create_all()
 
@@ -55,6 +92,7 @@ def seed_data():
     db.session.commit()
     print("Database seeded with initial data!")
 
+# Middleware to check if user is banned
 @app.before_request
 def check_banned_status():
     if current_user.is_authenticated and current_user.is_banned:
@@ -62,6 +100,7 @@ def check_banned_status():
         flash('Your account is banned. Please contact support.', 'danger')
         return redirect(url_for('login'))
 
+# Routes for authentication
 @app.route('/')
 def home():
     return redirect(url_for('login'))
@@ -101,30 +140,39 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+# Dashboard route for posts
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 @block_banned
 def dashboard():
     form = PostForm()
     if form.validate_on_submit():
-        new_post = Post(content=form.content.data, is_public=form.is_public.data, user_id=current_user.id)
+        # Get the content (HTML) from the hidden textarea
+        content = request.form['content']
+        is_public = form.is_public.data
+
+        # Save the post
+        new_post = Post(
+            content=content,
+            is_public=is_public,
+            user_id=current_user.id
+        )
         db.session.add(new_post)
         db.session.commit()
         flash('Post created successfully!')
+
     posts = Post.query.filter_by(is_public=True).all()
     return render_template('dashboard.html', user=current_user, form=form, posts=posts)
 
+# Watch Party route
 @app.route('/watch-party', methods=['GET', 'POST'])
 @login_required
 @block_banned
 def watch_party():
     form = WatchPartyForm()
-
-    # Fetch the latest watch party for the current user
     party = WatchParty.query.filter_by(host_id=current_user.id).order_by(WatchParty.id.desc()).first()
 
     if form.validate_on_submit():
-        # Create and save a new watch party
         party = WatchParty(
             name=form.name.data,
             video_url=form.video_url.data,
@@ -133,158 +181,25 @@ def watch_party():
             description=form.description.data
         )
         db.session.add(party)
-        db.session.commit()  # Ensure the party is committed to the database
-
+        db.session.commit()
         flash('Watch party created!')
         return redirect(url_for('watch_party'))
 
-    # If no party exists, create a placeholder
     if not party:
         party = WatchParty(name="New Watch Party", video_url="", host=current_user)
         db.session.add(party)
-        db.session.commit()  # Commit the placeholder to generate an ID
+        db.session.commit()
 
     return render_template('watch_party.html', form=form, party=party)
 
-@socketio.on('join')
-def handle_join(data):
-    room = data['room']
-    join_room(room)
-    send(f"{current_user.username} has joined the room.", to=room)
-
-@socketio.on('leave')
-def handle_leave(data):
-    room = data['room']
-    leave_room(room)
-    send(f"{current_user.username} has left the room.", to=room)
-
-@socketio.on('message')
-def handle_message(data):
-    room = data['room']
-    message = data['message']
-    send(f"{current_user.username}: {message}", to=room)
-
-@socketio.on('hostRoom')
-def handle_host_room(data):
-    room = data['room']
-    is_private = data['isPrivate']
-    watch_party = WatchParty.query.get(room)
-    if watch_party:
-        watch_party.is_private = is_private
-        db.session.commit()
-        emit('roomHosted', {'message': f"Room hosted as {'Private' if is_private else 'Public'}."}, broadcast=True)
-
-@socketio.on('screenShare')
-def handle_screen_share(data):
-    room = data['room']
-    track = data['track']
-    emit('screenShare', {'track': track}, room=room, include_self=False)
-
-@socketio.on('offer')
-def handle_offer(data):
-    room = data['room']
-    offer = data['offer']
-    emit('offer', {'offer': offer}, room=room, include_self=False)
-
-@socketio.on('answer')
-def handle_answer(data):
-    room = data['room']
-    answer = data['answer']
-    emit('answer', {'answer': answer}, room=room, include_self=False)
-
-@socketio.on('ice-candidate')
-def handle_ice_candidate(data):
-    room = data['room']
-    candidate = data['candidate']
-    emit('ice-candidate', {'candidate': candidate}, room=room, include_self=False)
-
+# Friends route
 @app.route('/friends')
 @login_required
 @block_banned
 def friends():
     friends_list = current_user.friends
-    all_users = User.query.filter(User.id != current_user.id).all()
+    all_users = User.query.filter(User.id != current_user.id, User.is_admin == False).all()
     return render_template('friends.html', friends=friends_list, all_users=all_users)
-
-@app.route('/add-friend/<int:friend_id>', methods=['POST'])
-@login_required
-def add_friend(friend_id):
-    friend = User.query.get_or_404(friend_id)
-    if friend not in current_user.friends:
-        current_user.friends.append(friend)
-        db.session.commit()
-        flash(f'You are now friends with {friend.username}!')
-    else:
-        flash(f'You are already friends with {friend.username}.')
-    return redirect(url_for('friends'))
-
-@app.route('/remove-friend/<int:user_id>', methods=['POST'])
-@login_required
-def remove_friend(user_id):
-    friend = User.query.get(user_id)
-    if friend in current_user.friends:
-        current_user.friends.remove(friend)
-        db.session.commit()
-        flash(f'{friend.username} has been removed from your friends list.')
-    return redirect(url_for('friends'))
-
-
-@app.route('/send-friend-request/<int:receiver_id>', methods=['POST'])
-@login_required
-def send_friend_request(receiver_id):
-    receiver = User.query.get_or_404(receiver_id)
-    existing_request = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=receiver_id).first()
-
-    if existing_request:
-        flash('Friend request already sent.')
-    else:
-        friend_request = FriendRequest(sender_id=current_user.id, receiver_id=receiver_id)
-        db.session.add(friend_request)
-        db.session.commit()
-        flash(f'Friend request sent to {receiver.username}.')
-
-    return redirect(url_for('friends'))
-
-@app.route('/accept-friend-request/<int:request_id>', methods=['POST'])
-@login_required
-def accept_friend_request(request_id):
-    friend_request = FriendRequest.query.get_or_404(request_id)
-
-    if friend_request.receiver_id == current_user.id:
-        # Add each other as friends
-        sender = User.query.get(friend_request.sender_id)
-        current_user.friends.append(sender)
-        db.session.delete(friend_request)
-        db.session.commit()
-        flash(f'You are now friends with {sender.username}.')
-    else:
-        flash('Invalid friend request.')
-
-    return redirect(url_for('friends'))
-
-@app.route('/reject-friend-request/<int:request_id>', methods=['POST'])
-@login_required
-def reject_friend_request(request_id):
-    friend_request = FriendRequest.query.get_or_404(request_id)
-
-    if friend_request.receiver_id == current_user.id:
-        db.session.delete(friend_request)
-        db.session.commit()
-        flash('Friend request rejected.')
-    else:
-        flash('Invalid friend request.')
-
-    return redirect(url_for('friends'))
-
-
-@app.route('/join-room/<int:room_id>')
-@login_required
-def join_room_page(room_id):
-    party = WatchParty.query.get_or_404(room_id)
-    if party.is_private and current_user not in party.host.friends:
-        flash('This room is private. Only friends can join.')
-        return redirect(url_for('dashboard'))
-    return render_template('watch_party.html', party=party)
 
 @app.route('/available-rooms')
 @login_required
@@ -301,6 +216,8 @@ def available_rooms():
 
     return render_template('available_rooms.html', rooms=rooms)
 
+
+# Run the application
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
