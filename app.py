@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from models import db, User, Post, WatchParty, FriendRequest
-from forms import LoginForm, RegisterForm, PostForm, WatchPartyForm
+from forms import ChangePasswordForm, LoginForm, RegisterForm, PostForm, WatchPartyForm
 from admin_routes import admin_bp, block_banned
 
 # Initialize Flask app
@@ -139,6 +139,29 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/account-settings')
+@login_required
+def account_settings():
+    return render_template('account_settings.html')
+
+@app.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        # Validate the current password
+        if not check_password_hash(current_user.password, form.current_password.data):
+            flash('Current password is incorrect.', 'danger')
+            return redirect(url_for('change_password'))
+
+        # Update the password
+        current_user.password = generate_password_hash(form.new_password.data, method='pbkdf2:sha256')
+        db.session.commit()
+        flash('Your password has been updated successfully!', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('change_password.html', form=form)
 
 # Dashboard route for posts
 @app.route('/dashboard', methods=['GET', 'POST'])
