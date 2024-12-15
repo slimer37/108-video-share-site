@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from sqlalchemy import Column, Text
+from sqlalchemy.dialects.postgresql import JSON
 
 db = SQLAlchemy()
 
@@ -41,7 +43,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     is_public = db.Column(db.Boolean, default=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
+    reactions = db.Column(JSON, default={}) 
 
 class WatchParty(db.Model):
     id = db.Column(db.Integer, primary_key=True)

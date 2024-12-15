@@ -3,7 +3,7 @@
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    text-align: left; /* Left-align text */
+    text-align: center; /* Left-align text */
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -12,25 +12,33 @@
 
 /* Headings and general text alignment */
 h1, h2 {
-    text-align: left;
+    text-align: center;
 }
 
 form {
-    text-align: left; /* Left-align forms */
+    text-align: center; /* Left-align forms */
 }
 
+/* Center the "All Public Posts" container */
 ul {
-    text-align: left; /* Left-align the list */
-    padding-left: 0;
+    list-style-type: none; /* Remove bullet points */
+    padding: 0;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto; /* Center the container horizontally */
+    text-align: center; /* Center-align the text */
 }
 
+/* Style individual list items */
 ul li {
     margin-bottom: 15px;
     border: 1px solid #ccc;
     padding: 10px;
     border-radius: 5px;
     background-color: #f9f9f9;
+    text-align: center; /* Center-align the text inside the box */
 }
+
 
 /* Navigation bar styling */
 nav {
@@ -111,8 +119,8 @@ form button:hover {
 h2 {
     margin-bottom: 20px;
     display: flex;
-    align-items: left;
-    justify-content: left;
+    align-items: center;
+    justify-content: center;
 }
 
 h2 img {
@@ -136,4 +144,62 @@ ul li {
     padding: 10px;
     border-radius: 5px;
     background-color: #f9f9f9;
+}
+
+/* Center the entire "All Public Posts" section */
+.all-public-posts {
+    text-align: center; /* Center-align text */
+    margin-top: 20px;
+}
+
+/* Center the individual post content */
+.all-public-posts ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto; /* Center-align the entire list container */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Ensure all list items are centered */
+}
+
+.all-public-posts ul li {
+    text-align: center; /* Center the content inside each post */
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 100%; /* Set width to align posts uniformly */
+    max-width: 600px; /* Limit width for better design */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for better aesthetics */
+}
+
+/* Center form elements like buttons and inputs */
+.center-form-elements {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Align items in the middle */
+    margin: 10px 0;          /* Add spacing between elements */
+   
+}
+
+/* Style for the emoji picker button */
+.emoji-button {
+    font-size: 0.8rem;      /* Smaller text size for the emoji */
+    padding: 2px 6px;       /* Smaller padding for a smaller button */
+    height: 40px;           /* Adjust the button height */
+    width: 40px;            /* Adjust the button width */
+    line-height: 1;         /* Adjust line spacing */
+    display: flex;          /* Align content (emoji) properly */
+    align-items: center;
+    justify-content: center;
+    background-color: #007bff; /* Button color */
+    color: #fff;            /* Text color */
+    border: none;           /* Remove border */
+    /*border-radius: 50%;     /* Optional: Make it circular */
+    cursor: pointer;        /* Pointer cursor for better UX */
+}
+
+.emoji-button:hover {
+    background-color: #0056b3; /* Slightly darker on hover */
 }

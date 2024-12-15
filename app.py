@@ -322,6 +322,22 @@ def available_rooms():
 
     return render_template('available_rooms.html', rooms=rooms)
 
+@app.route('/add-reaction/<int:post_id>', methods=['POST'])
+@login_required
+def add_reaction(post_id):
+    data = request.get_json()
+    emoji = data.get("emoji")
+
+    post = Post.query.get_or_404(post_id)
+
+    # Initialize or update reactions dictionary
+    if not post.reactions:
+        post.reactions = {}
+    post.reactions[emoji] = post.reactions.get(emoji, 0) + 1
+
+    db.session.commit()
+    return jsonify(reactions=post.reactions)
+
 
 # Run the application
 if __name__ == '__main__':
