@@ -1,59 +1,139 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    padding: 0;
-}
-
+/* Center the main container on the page */
 .container {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background: #ffffff;
+    text-align: left; /* Left-align text */
+    background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.chat-container {
-    margin-top: 20px;
+/* Headings and general text alignment */
+h1, h2 {
+    text-align: left;
+}
+
+form {
+    text-align: left; /* Left-align forms */
+}
+
+ul {
+    text-align: left; /* Left-align the list */
+    padding-left: 0;
+}
+
+ul li {
+    margin-bottom: 15px;
     border: 1px solid #ccc;
     padding: 10px;
-    width: 300px;
+    border-radius: 5px;
     background-color: #f9f9f9;
 }
 
-.chat-box {
-    height: 200px;
-    overflow-y: scroll;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    padding: 5px;
-    background-color: #fff;
+/* Navigation bar styling */
+nav {
+    margin-bottom: 20px;
 }
 
-button {
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-    padding: 5px 10px;
+nav a {
+    margin: 0 10px;
     text-decoration: none;
-    border-radius: 5px;
+    color: #007bff;
 }
 
-.btn-primary:hover {
-    background-color: #0056b3;
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Drop area styling */
+.drop-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.drop-area.dragging {
+    border-color: #0066cc;
+    background-color: #e6f7ff;
+}
+
+/* Textarea styling */
+textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* Style for forms and inputs */
+form {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form .content-editable {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 100px;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    
+}
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    border: none;
     color: white;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Profile photo and username */
+h2 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: left;
+    justify-content: left;
+}
+
+h2 img {
+    margin-left: 10px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+/* Public posts styling */
+ul {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+    max-width: 600px;
+}
+
+ul li {
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}

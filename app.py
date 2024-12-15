@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from models import db, User, Post, WatchParty, FriendRequest
-from forms import ChangePasswordForm, LoginForm, RegisterForm, PostForm, WatchPartyForm
+from forms import ChangePasswordForm, ChangeUsernameForm, LoginForm, RegisterForm, PostForm, WatchPartyForm
 from admin_routes import admin_bp, block_banned
 
 # Initialize Flask app
@@ -186,6 +186,19 @@ def logout():
 def account_settings():
     return render_template('account_settings.html')
 
+@app.route('/change-username', methods=['GET', 'POST'])
+@login_required
+def change_username():
+    form = ChangeUsernameForm()
+    if form.validate_on_submit():
+        # Update the username
+        current_user.username = form.new_username.data
+        db.session.commit()
+        flash('Your username has been updated successfully!', 'success')
+        return redirect(url_for('account_settings'))
+
+    return render_template('change_username.html', form=form)
+
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
@@ -264,6 +277,35 @@ def friends():
     friends_list = current_user.friends
     all_users = User.query.filter(User.id != current_user.id, User.is_admin == False).all()
     return render_template('friends.html', friends=friends_list, all_users=all_users)
+
+@app.route('/send-friend-request/<int:receiver_id>', methods=['POST'])
+@login_required
+def send_friend_request(receiver_id):
+    receiver = User.query.get_or_404(receiver_id)
+
+    # Prevent sending friend requests to admin users
+    if receiver.is_admin:
+        flash('You cannot send a friend request to an admin.')
+        return redirect(url_for('friends'))
+
+    existing_request = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=receiver_id).first()
+    if existing_request:
+        flash('Friend request already sent.')
+    else:
+        friend_request = FriendRequest(sender_id=current_user.id, receiver_id=receiver_id)
+        db.session.add(friend_request)
+        db.session.commit()
+        flash(f'Friend request sent to {receiver.username}.')
+    return redirect(url_for('friends'))
+
+@app.route('/join-room/<int:room_id>')
+@login_required
+def join_room_page(room_id):
+    party = WatchParty.query.get_or_404(room_id)
+    if party.is_private and current_user not in party.host.friends:
+        flash('This room is private. Only friends can join.')
+        return redirect(url_for('available_rooms'))
+    return render_template('watch_party.html', party=party)
 
 @app.route('/available-rooms')
 @login_required
