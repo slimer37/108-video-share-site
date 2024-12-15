@@ -43,3 +43,17 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    color: white;
+}
+

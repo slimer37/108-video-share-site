@@ -3,7 +3,11 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2>Welcome, {{ user.username }}!</h2>
+<h2>
+    Welcome, {{ user.username }}!
+    <!-- Button for Account Settings -->
+    <a href="{{ url_for('account_settings') }}" class="btn btn-primary" style="margin-left: 10px;">Account Settings</a>
+</h2>
 
 <!-- Navigation Tabs -->
 <nav>
@@ -21,12 +25,10 @@
     {{ form.hidden_tag() }}
     <div>
         <label for="content">Content</label>
-        <!-- Use a content-editable div for richer input -->
         <div id="contentEditable" class="content-editable" contenteditable="true" placeholder="Write something here..."></div>
         <textarea id="content" name="content" hidden></textarea>
     </div>
 
-    <!-- Add a button to upload an image -->
     <div>
         <label for="imageInput" class="btn btn-secondary">Choose an Image</label>
         <input type="file" id="imageInput" accept="image/*" style="display: none;" />
@@ -43,7 +45,7 @@
     {% for post in posts %}
     <li>
         <strong>{{ post.user.username }}:</strong>
-        <div>{{ post.content|safe }}</div> <!-- Render HTML safely -->
+        <div>{{ post.content|safe }}</div>
     </li>
     {% endfor %}
 </ul>
