@@ -1,0 +1,32 @@
+<!-- templates/group_chats.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Group Chats</title>
+</head>
+<body>
+    <h1>Group Chats</h1>
+
+    <h2>Your Groups</h2>
+    <ul>
+        {% for group in groups %}
+            <li>
+                <a href="{{ url_for('chat_with_group', group_id=group.id) }}">{{ group.name }}</a>
+            </li>
+        {% else %}
+            <li>You are not a member of any groups yet.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Create a New Group</h2>
+    <a href="{{ url_for('create_group') }}">Create Group</a>
+
+    <form action="{{ url_for('create_group') }}" method="POST">
+        <input type="text" name="name" placeholder="Group Name" required>
+        <button type="submit">Create Group</button>
+    </form>
+
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
