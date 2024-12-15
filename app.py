@@ -34,6 +34,47 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# File upload configuration
+PROFILE_PHOTO_FOLDER = 'static/uploads/profile_photos'
+POST_IMAGE_FOLDER = 'static/uploads/post_images'
+app.config['PROFILE_PHOTO_FOLDER'] = PROFILE_PHOTO_FOLDER
+app.config['POST_IMAGE_FOLDER'] = POST_IMAGE_FOLDER
+
+os.makedirs(PROFILE_PHOTO_FOLDER, exist_ok=True)
+os.makedirs(POST_IMAGE_FOLDER, exist_ok=True)
+
+# Save profile photo helper
+def save_profile_photo(file):
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['PROFILE_PHOTO_FOLDER'], filename)
+        file.save(filepath)
+        return f"/static/uploads/profile_photos/{filename}"
+    return None
+
+@app.route('/upload-profile-photo', methods=['POST'])
+@login_required
+def upload_profile_photo():
+    if 'profile_photo' not in request.files:
+        flash('No file part', 'danger')
+        return redirect(url_for('account_settings'))
+
+    file = request.files['profile_photo']
+    if file.filename == '':
+        flash('No selected file', 'danger')
+        return redirect(url_for('account_settings'))
+
+    file_url = save_profile_photo(file)
+    if file_url:
+        current_user.profile_photo = file_url
+        db.session.commit()
+        flash('Profile photo updated successfully!', 'success')
+    else:
+        flash('Invalid file type', 'danger')
+
+    return redirect(url_for('account_settings'))
+
+
 # Route to handle image uploads
 @app.route("/upload-image", methods=["POST"])
 @login_required

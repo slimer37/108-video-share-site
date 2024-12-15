@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     is_banned = db.Column(db.Boolean, default=False)
+    profile_photo = db.Column(db.String(300), nullable=True)  # Path to profile photo
     posts = db.relationship('Post', backref='user', lazy=True)
     watch_parties = db.relationship('WatchParty', backref='host', lazy=True)
     friends = db.relationship('User', secondary=friends_table,

@@ -1,15 +1,23 @@
-{% extends 'base.html' %}
-
-{% block title %}Account Settings{% endblock %}
-
-{% block content %}
 <h2>Account Settings</h2>
 
 <div>
-    <a href="{{ url_for('change_password') }}" class="btn btn-secondary">Change Password</a>
+    <!-- Display the current profile photo -->
+    {% if current_user.profile_photo %}
+        <img src="{{ current_user.profile_photo }}" alt="Profile Photo" style="max-width: 150px; border-radius: 50%;">
+    {% else %}
+        <p>No profile photo uploaded.</p>
+    {% endif %}
 </div>
+
+<!-- Form to upload a new profile photo -->
+<form action="{{ url_for('upload_profile_photo') }}" method="POST" enctype="multipart/form-data">
+    <div>
+        <label for="profile_photo">Upload a new profile photo:</label><br>
+        <input type="file" id="profile_photo" name="profile_photo" accept="image/*">
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
 
 <div>
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
-{% endblock %}
