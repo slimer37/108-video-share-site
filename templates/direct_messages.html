@@ -1,0 +1,11 @@
+<!-- templates/direct_messages.html -->
+<h1>Direct Messages</h1>
+
+<h2>Your Friends</h2>
+<ul>
+    {% for friend in friends %}
+        <li><a href="{{ url_for('chat_with_friend', friend_id=friend.id) }}">{{ friend.username }}</a></li>
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
