@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Post, WatchParty, FriendRequest
+from models import db, User, Post, WatchParty, FriendRequest, DirectMessage, ChatGroup, GroupMessage
 from forms import LoginForm, RegisterForm, PostForm, WatchPartyForm
 
 app = Flask(__name__)
@@ -131,6 +131,18 @@ def handle_screen_share(data):
     track = data['track']
     emit('screenShare', {'track': track}, room=room, include_self=False)
 
+# New event to notify users when screen sharing starts
+@socketio.on('screenShareStarted')
+def handle_screen_share_started(data):
+    room = data['room']
+    emit('screenShareStarted', {}, room=room, include_self=False)
+
+# New event to notify users when screen sharing stops
+@socketio.on('screenShareStopped')
+def handle_screen_share_stopped(data):
+    room = data['room']
+    emit('screenShareStopped', {}, room=room, include_self=False)
+
 @socketio.on('offer')
 def handle_offer(data):
     room = data['room']
@@ -153,19 +165,32 @@ def handle_ice_candidate(data):
 @login_required
 def friends():
     friends_list = current_user.friends
-    all_users = User.query.filter(User.id != current_user.id).all()
+    # Exclude users who are already friends
+    all_users = User.query.filter(User.id != current_user.id, ~User.friends.any(id=current_user.id)).all()
     return render_template('friends.html', friends=friends_list, all_users=all_users)
 
 @app.route('/add-friend/<int:friend_id>', methods=['POST'])
 @login_required
 def add_friend(friend_id):
+    if friend_id == current_user.id:
+        flash("You cannot send a friend request to yourself.")
+        return redirect(url_for('friends'))
+
     friend = User.query.get_or_404(friend_id)
-    if friend not in current_user.friends:
-        current_user.friends.append(friend)
-        db.session.commit()
-        flash(f'You are now friends with {friend.username}!')
-    else:
+    if friend in current_user.friends:
         flash(f'You are already friends with {friend.username}.')
+        return redirect(url_for('friends'))
+
+    existing_request = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=friend_id).first()
+    if existing_request:
+        flash('Friend request already sent.')
+        return redirect(url_for('friends'))
+
+    friend_request = FriendRequest(sender_id=current_user.id, receiver_id=friend_id)
+    db.session.add(friend_request)
+    db.session.commit()
+    flash(f'Friend request sent to {friend.username}.')
+
     return redirect(url_for('friends'))
 
 @app.route('/remove-friend/<int:user_id>', methods=['POST'])
@@ -226,6 +251,108 @@ def reject_friend_request(request_id):
 
     return redirect(url_for('friends'))
 
+@app.route('/direct-messages')
+@login_required
+def direct_messages():
+    friends_list = current_user.friends
+    return render_template('direct_messages.html', friends=friends_list)
+
+
+@app.route('/direct-messages/<int:friend_id>', methods=['GET', 'POST'])
+@login_required
+def chat_with_friend(friend_id):
+    friend = User.query.get_or_404(friend_id)
+    messages = DirectMessage.query.filter(
+        ((DirectMessage.sender_id == current_user.id) & (DirectMessage.receiver_id == friend_id)) |
+        ((DirectMessage.sender_id == friend_id) & (DirectMessage.receiver_id == current_user.id))
+    ).order_by(DirectMessage.timestamp).all()
+
+    if request.method == 'POST':
+        message = request.form['message']
+        new_message = DirectMessage(sender_id=current_user.id, receiver_id=friend_id, message=message)
+        db.session.add(new_message)
+        db.session.commit()
+        return redirect(url_for('chat_with_friend', friend_id=friend_id))
+
+    return render_template('chat_with_friend.html', friend=friend, messages=messages)
+
+
+@app.route('/group-chats')
+@login_required
+def group_chats():
+    groups = current_user.groups
+    return render_template('group_chats.html', groups=groups)
+
+
+@app.route('/group/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def chat_with_group(group_id):
+    group = ChatGroup.query.get_or_404(group_id)
+    if current_user not in group.members:
+        flash('You are not a member of this group.')
+        return redirect(url_for('group_chats'))
+
+    if request.method == 'POST':
+        message = request.form['message']
+        new_message = GroupMessage(group_id=group_id, sender_id=current_user.id, message=message)
+        db.session.add(new_message)
+        db.session.commit()
+        return redirect(url_for('chat_with_group', group_id=group_id))
+
+    messages = GroupMessage.query.filter_by(group_id=group_id).order_by(GroupMessage.timestamp.asc()).all()
+    return render_template('chat_with_group.html', group=group, messages=messages)
+
+@app.route('/create-group', methods=['GET', 'POST'])
+@login_required
+def create_group():
+    if request.method == 'POST':
+        group_name = request.form['name']
+        friend_ids = request.form.getlist('friend_ids')
+
+        # Create the new group and add the current user
+        new_group = ChatGroup(name=group_name)
+        new_group.members.append(current_user)
+
+        # Add selected friends to the group
+        for friend_id in friend_ids:
+            friend = User.query.get(friend_id)
+            if friend:
+                new_group.members.append(friend)
+
+        db.session.add(new_group)
+        db.session.commit()
+        flash(f'Group "{group_name}" created successfully.')
+
+        return redirect(url_for('group_chats'))
+
+    friends_list = current_user.friends
+    return render_template('create_group.html', friends=friends_list)
+
+@app.route('/invite-to-group/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def invite_to_group(group_id):
+    group = ChatGroup.query.get_or_404(group_id)
+    
+    # Ensure the current user is a member of the group
+    if current_user not in group.members:
+        flash('You are not authorized to invite friends to this group.')
+        return redirect(url_for('group_chats'))
+
+    if request.method == 'POST':
+        friend_ids = request.form.getlist('friend_ids')
+        for friend_id in friend_ids:
+            friend = User.query.get(friend_id)
+            if friend and friend not in group.members:
+                group.members.append(friend)
+
+        db.session.commit()
+        flash('Friends have been invited to the group.')
+        return redirect(url_for('chat_with_group', group_id=group.id))
+
+    # Get the list of friends who are not yet in the group
+    friends_not_in_group = [friend for friend in current_user.friends if friend not in group.members]
+    
+    return render_template('invite_to_group.html', group=group, friends=friends_not_in_group)
 
 @app.route('/join-room/<int:room_id>')
 @login_required

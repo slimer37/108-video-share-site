@@ -46,3 +46,37 @@ class WatchParty(db.Model):
     host_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     is_private = db.Column(db.Boolean, default=False)  # Privacy setting
     description = db.Column(db.String(500), nullable=True)  # Room description
+
+class DirectMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.String(500), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
+
+
+class ChatGroup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    members = db.relationship('User', secondary='group_members', backref='groups')
+
+
+group_members = db.Table(
+    'group_members',
+    db.Column('group_id', db.Integer, db.ForeignKey('chat_group.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+)
+
+class GroupMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('chat_group.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.String(500), nullable=False)  # Correct field name
+    timestamp = db.Column(db.DateTime, default=db.func.now())
+
+    sender = db.relationship('User', backref='group_messages')
+    group = db.relationship('ChatGroup', backref='messages')
+    

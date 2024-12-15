@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Create New Group</title>
+</head>
+<body>
+    <h1>Create a New Group</h1>
+    <form action="{{ url_for('create_group') }}" method="POST">
+        <label for="group_name">Group Name:</label>
+        <input type="text" id="group_name" name="group_name" required>
+
+        <h3>Select Friends to Invite:</h3>
+        {% for friend in friends %}
+            <div>
+                <input type="checkbox" id="friend_{{ friend.id }}" name="friend_ids" value="{{ friend.id }}">
+                <label for="friend_{{ friend.id }}">{{ friend.username }}</label>
+            </div>
+        {% else %}
+            <p>No friends available to invite.</p>
+        {% endfor %}
+
+        <button type="submit">Create Group</button>
+    </form>
+    <a href="{{ url_for('group_chats') }}">Back to Group Chats</a>
+</body>
+</html>
