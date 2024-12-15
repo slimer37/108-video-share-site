@@ -17,22 +17,173 @@
 </nav>
 
 <h3>Create a Post</h3>
-<form method="POST">
+<form id="postForm" method="POST" enctype="multipart/form-data">
     {{ form.hidden_tag() }}
     <div>
-        {{ form.content.label }}<br>
-        {{ form.content(rows=4, cols=50) }}
+        <label for="content">Content</label>
+        <!-- Use a content-editable div for richer input -->
+        <div id="contentEditable" class="content-editable" contenteditable="true" placeholder="Write something here..."></div>
+        <textarea id="content" name="content" hidden></textarea>
     </div>
+
+    <!-- Add a button to upload an image -->
+    <div>
+        <label for="imageInput" class="btn btn-secondary">Choose an Image</label>
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    </div>
+
     <div>
         {{ form.is_public.label }} {{ form.is_public }}
     </div>
-    <button type="submit">Post</button>
+    <button type="submit" id="postButton">Post</button>
 </form>
 
 <h3>All Public Posts</h3>
 <ul>
     {% for post in posts %}
-    <li><strong>{{ post.user.username }}:</strong> {{ post.content }}</li>
+    <li>
+        <strong>{{ post.user.username }}:</strong>
+        <div>{{ post.content|safe }}</div> <!-- Render HTML safely -->
+    </li>
     {% endfor %}
 </ul>
+
+<!-- JavaScript for handling paste, drag-and-drop, and file input events -->
+<script>
+    const contentEditable = document.getElementById("contentEditable");
+    const hiddenTextarea = document.getElementById("content");
+    const imageInput = document.getElementById("imageInput");
+
+    // Handle paste events
+    contentEditable.addEventListener("paste", async (event) => {
+        event.preventDefault();
+        const clipboardData = event.clipboardData || window.clipboardData;
+        const items = clipboardData.items;
+
+        for (let item of items) {
+            if (item.type.startsWith("image/")) {
+                const file = item.getAsFile();
+                await handleImageUpload(file);
+            } else {
+                const text = clipboardData.getData("text");
+                document.execCommand("insertText", false, text);
+            }
+        }
+    });
+
+    // Handle drag-and-drop events
+    contentEditable.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        contentEditable.classList.add("drag-over");
+    });
+
+    contentEditable.addEventListener("dragleave", () => {
+        contentEditable.classList.remove("drag-over");
+    });
+
+    contentEditable.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        contentEditable.classList.remove("drag-over");
+
+        const files = event.dataTransfer.files;
+        for (let file of files) {
+            if (file.type.startsWith("image/")) {
+                await handleImageUpload(file);
+            }
+        }
+    });
+
+    // Handle file input events
+    imageInput.addEventListener("change", async (event) => {
+        const files = event.target.files;
+        for (let file of files) {
+            if (file.type.startsWith("image/")) {
+                await handleImageUpload(file);
+            }
+        }
+    });
+
+    // Function to upload the image to the server and insert it into the contentEditable div
+    async function handleImageUpload(file) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        // Upload the image to the server
+        const response = await fetch("/upload-image", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const imageUrl = data.image_url;
+
+            // Insert the image into the contentEditable div
+            const img = document.createElement("img");
+            img.src = imageUrl;
+            img.style.maxWidth = "300px";
+            img.style.margin = "10px 0";
+            contentEditable.appendChild(img);
+
+            // Optionally, add the image URL to the hidden textarea
+            hiddenTextarea.value += `<img src="${imageUrl}" />\n`;
+        } else {
+            alert("Failed to upload image.");
+        }
+    }
+
+    // Sync contentEditable div with the hidden textarea
+    document.getElementById("postButton").addEventListener("click", () => {
+        hiddenTextarea.value = contentEditable.innerHTML; // Send the full HTML to the backend
+    });
+</script>
+
+<!-- CSS to style the content-editable div -->
+<style>
+    .content-editable {
+        border: 1px solid #ccc;
+        padding: 10px;
+        min-height: 100px;
+        width: 100%;
+        font-size: 14px;
+        margin-bottom: 10px;
+        overflow-y: auto;
+    }
+
+    .content-editable.drag-over {
+        border-color: #007bff;
+        background-color: #e6f7ff;
+    }
+
+    .content-editable img {
+        display: block;
+        max-width: 100%;
+        margin: 10px 0;
+    }
+
+    .content-editable:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    #imageInput {
+        display: none;
+    }
+
+    label[for="imageInput"] {
+        cursor: pointer;
+        color: white;
+        background-color: #007bff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-align: center;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    label[for="imageInput"]:hover {
+        background-color: #0056b3;
+    }
+</style>
 {% endblock %}
