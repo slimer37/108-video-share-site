@@ -197,7 +197,7 @@ def change_username():
         flash('Your username has been updated successfully!', 'success')
         return redirect(url_for('account_settings'))
 
-    return render_template('change_username.html', form=form)
+    return render_template('change_username.html', user=current_user, form=form)
 
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
@@ -215,7 +215,7 @@ def change_password():
         flash('Your password has been updated successfully!', 'success')
         return redirect(url_for('dashboard'))
 
-    return render_template('change_password.html', form=form)
+    return render_template('change_password.html', user=current_user, form=form)
 
 # Dashboard route for posts
 @app.route('/dashboard', methods=['GET', 'POST'])
