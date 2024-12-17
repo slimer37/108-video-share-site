@@ -123,14 +123,35 @@ ul li {
     text-align: center; /* Center-align the text inside the box */
 }
 
+.nav-container {
+    width: 100%;
+    background-color: #eee;
+    display: flex;
+
+    justify-content: space-between;
+
+    align-content: center;
+
+    border-bottom: 1px solid gray;
+}
+
+.name-area {
+    padding: 0px 10px;
+}
 
 /* Navigation bar styling */
 nav {
-    margin-bottom: 20px;
+    padding: 0px 10px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
 }
 
 nav a {
-    margin: 0 10px;
     text-decoration: none;
     color: #007bff !important;
 }
