@@ -28,12 +28,25 @@ footer {
     border-top: 1px solid #ddd;
 }
 
+.login-field {
+    text-align: left;
+    width: 50%;
+    margin: auto;
+}
+
+input {
+    border: 1px solid black;
+    font-size: 10pt;
+    height: 15pt;
+    border-radius: 2px;
+}
+
 /* Center the main container on the page */
 .container {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    text-align: center; /* Left-align text */
+    text-align: center;
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;

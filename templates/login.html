@@ -4,21 +4,23 @@
 
 {% block content %}
 <div class="form-container">
-    <h2>Log in</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <div>
-            {{ form.username.label }}
-            {{ form.username(size=30) }}
-        </div>
-        <br>
-        <div>
-            {{ form.password.label }}
-            {{ form.password(size=30) }}
-        </div>
-        <br>
-        <button type="submit">Login</button>
-    </form>
+    <div class="container">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+                <h2>Log in</h2>
+                <div class="login-field">
+                    {{ form.username.label }}
+                    {{ form.username(style="width:100%") }}
+                </div>
+                <br>
+                <div class="login-field">
+                    {{ form.password.label }}
+                    {{ form.password(style="width:100%") }}
+                </div>
+                <br>
+                <button type="submit">Login</button>
+        </form>
+    </div>
     <p style="text-align: center;">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
 </div>
 {% endblock %}
