@@ -4,11 +4,10 @@
 
 <div class="nav-container">
     <nav>
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('watch_party') }}">Watch Party</a>
-        <a href="{{ url_for('friends') }}">Friends</a>
-        <a href="{{ url_for('available_rooms') }}">Join Room</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
+        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a class="nav-link" href="{{ url_for('watch_party') }}">Watch Party</a>
+        <a class="nav-link" href="{{ url_for('friends') }}">Friends</a>
+        <a class="nav-link" href="{{ url_for('available_rooms') }}">Join Room</a>
     </nav>
 
 
@@ -20,6 +19,7 @@
         <a href="{{ url_for('account_settings') }}" style="height: 24px;">
             <img class="logo" src="static/img/manageacct.svg" style="height: 100%" alt="Account Settings Button">
         </a>
+        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
     </div>
 </div>
 

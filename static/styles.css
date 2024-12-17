@@ -155,12 +155,12 @@ nav {
     gap: 20px;
 }
 
-nav a {
+.nav-link {
     text-decoration: none;
     color: #007bff !important;
 }
 
-nav a:hover {
+.nav-link:hover {
     text-decoration: underline;
 }
 
