@@ -6,29 +6,31 @@
     <title>Join a Room</title>
 </head>
 <body>
-<h1>Available Rooms</h1>
+    <div class="container">
+        <h1>Available Rooms</h1>
 
-<form method="GET">
-    <input type="text" name="search" placeholder="Search by host name..." value="{{ request.args.get('search', '') }}">
-    <label>
-        <input type="checkbox" name="friends_only" {% if request.args.get('friends_only') %}checked{% endif %}>
-        Friends-Only Rooms
-    </label>
-    <button type="submit">Search</button>
-</form>
+        <form method="GET">
+            <input type="text" name="search" placeholder="Search by host name..." value="{{ request.args.get('search', '') }}">
+            <label>
+                <input type="checkbox" name="friends_only" {% if request.args.get('friends_only') %}checked{% endif %}>
+                Friends-Only Rooms
+            </label>
+            <button type="submit">Search</button>
+        </form>
 
-<ul>
-    {% for room in rooms %}
-        <li>
-            <strong>{{ room.name }}</strong> - Hosted by {{ room.host.username }}<br>
-            Description: {{ room.description or 'No description' }}<br>
-            <a href="{{ url_for('join_room_page', room_id=room.id) }}">Join Room</a>
-        </li>
-    {% else %}
-        <li>No rooms found.</li>
-    {% endfor %}
-</ul>
+        <ul>
+            {% for room in rooms %}
+                <li>
+                    <strong>{{ room.name }}</strong> - Hosted by {{ room.host.username }}<br>
+                    Description: {{ room.description or 'No description' }}<br>
+                    <a href="{{ url_for('join_room_page', room_id=room.id) }}">Join Room</a>
+                </li>
+            {% else %}
+                <li>No rooms found.</li>
+            {% endfor %}
+        </ul>
 
-<a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </div>
 </body>
 </html>

@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>{% block title %}SocialVisor{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://unpkg.com/picmo@latest/dist/umd/index.js"></script>
 </head>
 <body>
-    <header>
-        <h1>SocialVisor</h1>
-    </header>
-
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer>
-        <p>&copy; 2024 SocialVisor</p>
-    </footer>
-
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <div class="page-container">
+        <header>
+            <h1>SocialVisor</h1>
+        </header>
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+        <footer>
+            <p>&copy; 2024 SocialVisor</p>
+        </footer>
+    </div>
 </body>
 </html>

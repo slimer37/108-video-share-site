@@ -1,59 +1,205 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    padding: 0;
-}
-
+/* Center the main container on the page */
 .container {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background: #ffffff;
+    text-align: center; /* Left-align text */
+    background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.chat-container {
-    margin-top: 20px;
+/* Headings and general text alignment */
+h1, h2 {
+    text-align: center;
+}
+
+form {
+    text-align: center; /* Left-align forms */
+}
+
+/* Center the "All Public Posts" container */
+ul {
+    list-style-type: none; /* Remove bullet points */
+    padding: 0;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto; /* Center the container horizontally */
+    text-align: center; /* Center-align the text */
+}
+
+/* Style individual list items */
+ul li {
+    margin-bottom: 15px;
     border: 1px solid #ccc;
     padding: 10px;
-    width: 300px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    text-align: center; /* Center-align the text inside the box */
+}
+
+
+/* Navigation bar styling */
+nav {
+    margin-bottom: 20px;
+}
+
+nav a {
+    margin: 0 10px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Drop area styling */
+.drop-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.drop-area.dragging {
+    border-color: #0066cc;
+    background-color: #e6f7ff;
+}
+
+/* Textarea styling */
+textarea {
+    width: 100%;
+    height: 100px;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* Style for forms and inputs */
+form {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form .content-editable {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 100px;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    
+}
+
+form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Profile photo and username */
+h2 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h2 img {
+    margin-left: 10px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+/* Public posts styling */
+ul {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+    max-width: 600px;
+}
+
+ul li {
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
     background-color: #f9f9f9;
 }
 
-.chat-box {
-    height: 200px;
-    overflow-y: scroll;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    padding: 5px;
-    background-color: #fff;
+/* Center the entire "All Public Posts" section */
+.all-public-posts {
+    text-align: center; /* Center-align text */
+    margin-top: 20px;
 }
 
-button {
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
+/* Center the individual post content */
+.all-public-posts ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto; /* Center-align the entire list container */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Ensure all list items are centered */
+}
+
+.all-public-posts ul li {
+    text-align: center; /* Center the content inside each post */
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
     padding: 10px;
-    cursor: pointer;
     border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 100%; /* Set width to align posts uniformly */
+    max-width: 600px; /* Limit width for better design */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for better aesthetics */
 }
 
-button:hover {
-    background-color: #0056b3;
+/* Center form elements like buttons and inputs */
+.center-form-elements {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Align items in the middle */
+    margin: 10px 0;          /* Add spacing between elements */
+   
 }
 
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-    padding: 5px 10px;
-    text-decoration: none;
-    border-radius: 5px;
+/* Style for the emoji picker button */
+.emoji-button {
+    font-size: 0.8rem;      /* Smaller text size for the emoji */
+    padding: 2px 6px;       /* Smaller padding for a smaller button */
+    height: 40px;           /* Adjust the button height */
+    width: 40px;            /* Adjust the button width */
+    line-height: 1;         /* Adjust line spacing */
+    display: flex;          /* Align content (emoji) properly */
+    align-items: center;
+    justify-content: center;
+    background-color: #007bff; /* Button color */
+    color: #fff;            /* Text color */
+    border: none;           /* Remove border */
+    /*border-radius: 50%;     /* Optional: Make it circular */
+    cursor: pointer;        /* Pointer cursor for better UX */
 }
 
-.btn-primary:hover {
-    background-color: #0056b3;
-    color: white;
+.emoji-button:hover {
+    background-color: #0056b3; /* Slightly darker on hover */
 }
-
