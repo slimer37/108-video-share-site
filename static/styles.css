@@ -1,4 +1,4 @@
-header {
+.title-header {
     width: 100%;
     border-bottom: 1px solid #ddd;
 
@@ -86,6 +86,12 @@ body {
     color: white;
 }
 
+#emoji-picker-container {
+    text-align: left;
+    position: absolute;
+    z-index: 10;
+}
+
 .container a {
     color: #0050ac;
 }
@@ -97,10 +103,6 @@ a {
 /* Headings and general text alignment */
 h1, h2 {
     text-align: center;
-}
-
-form {
-    text-align: center; /* Left-align forms */
 }
 
 .nav-container {
