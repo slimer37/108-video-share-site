@@ -182,13 +182,14 @@ def dashboard():
     if form.validate_on_submit():
         # Get the content (HTML) from the hidden textarea
         raw_content = request.form['content']
-        
+
         # Sanitize the content to prevent XSS
-        allowed_tags = ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'img']  # Safe tags you allow
-        allowed_attributes = {'img': ['src', 'alt']}  # Allow 'src' and 'alt' for images
+        allowed_tags = ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'img']
+        allowed_attributes = {'img': ['src', 'alt']}
         sanitized_content = bleach.clean(raw_content, tags=allowed_tags, attributes=allowed_attributes)
-        
-        is_public = form.is_public.data
+
+        # Explicitly set the post as public
+        is_public = True
 
         # Save the sanitized post
         new_post = Post(
