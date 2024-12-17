@@ -506,7 +506,7 @@ def create_group():
         return redirect(url_for('group_chats'))
 
     friends_list = current_user.friends
-    return render_template('create_group.html', friends=friends_list)
+    return render_template('create_group.html', user=current_user, friends=friends_list)
 
 @app.route('/invite-to-group/<int:group_id>', methods=['GET', 'POST'])
 @login_required

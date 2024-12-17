@@ -1,31 +1,30 @@
-<!-- templates/chat_with_group.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Group Chat: {{ group.name }}</title>
-</head>
-<body>
-    <h1>Group Chat: {{ group.name }}</h1>
+{% extends 'logged_in.html' %}
+
+{% block title %}Group Chat: {{ group.name }}{% endblock %}
+
+{% block inner %}
+<div class="container">
+    <h2 class="section-header">{{ group.name }}</h2>
 
     <!-- Invite Friends Link -->
     <a href="{{ url_for('invite_to_group', group_id=group.id) }}">Invite Friends to Group</a>
 
     <!-- Group Messages -->
-    <div class="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+    <div class="chat-box" id="chat-box">
         {% for message in messages %}
-            <p><strong>{{ message.sender.username }}:</strong> {{ message.message }}</p>
+            <p><strong>{{ message.sender.username }}:</strong> {{ message.message }} <small style="color: gray; font-size: 7pt">{{ message.timestamp.strftime('%Y-%m-%d %I:%M %p') }}</small></p>
         {% else %}
             <p>No messages yet. Start the conversation!</p>
         {% endfor %}
     </div>
 
     <!-- Message Input -->
-    <form action="{{ url_for('chat_with_group', group_id=group.id) }}" method="POST" style="margin-top: 20px;">
-        <input type="text" name="message" placeholder="Type a message..." required>
-        <button type="submit">Send</button>
+    <form action="{{ url_for('chat_with_group', group_id=group.id) }}#chat-box" method="POST" style="display: flex; width: 100%; align-items: center; gap: 10px;">
+        <input type="text" name="message" placeholder="Type a message..." required style="height: 30px; flex: 1;">
+        <button type="submit" class="btn">Send</button>
     </form>
 
-    <a href="{{ url_for('group_chats') }}">Back to Group Chats</a>
-</body>
-</html>
+    <a class="btn" href="{{ url_for('group_chats') }}">Back to Group Chats</a>
+</div>
+
+{% endblock %}

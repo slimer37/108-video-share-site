@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Invite Friends to {{ group.name }}</title>
-</head>
-<body>
+{% extends 'logged_in.html' %}
+
+{% block title %}Invite Friends to {{ group.name }}{% endblock %}
+
+{% block inner %}
+<div class="container">
     <h1>Invite Friends to {{ group.name }}</h1>
     <form action="{{ url_for('invite_to_group', group_id=group.id) }}" method="POST">
         {% for friend in friends %}
@@ -12,11 +11,12 @@
                 <input type="checkbox" id="friend_{{ friend.id }}" name="friend_ids" value="{{ friend.id }}">
                 <label for="friend_{{ friend.id }}">{{ friend.username }}</label>
             </div>
+            <button class="btn" type="submit">Send Invites</button>
         {% else %}
             <p>No friends to invite.</p>
         {% endfor %}
-        <button type="submit">Send Invites</button>
     </form>
-    <a href="{{ url_for('chat_with_group', group_id=group.id) }}">Back to Group Chat</a>
-</body>
-</html>
+    <a class="btn" href="{{ url_for('chat_with_group', group_id=group.id) }}">Back to Group Chat</a>
+</div>
+
+{% endblock %}

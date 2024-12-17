@@ -303,7 +303,7 @@ form .content-editable {
 }
 
 .chat-box {
-    border: 1px solid black;
+    border: 1px solid #ccc;
     border-radius: 5px;
     height: 60vh;
     overflow-y: scroll;
