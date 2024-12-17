@@ -435,7 +435,7 @@ def reject_friend_request(request_id):
 @login_required
 def direct_messages():
     friends_list = current_user.friends
-    return render_template('direct_messages.html', friends=friends_list)
+    return render_template('direct_messages.html', user=current_user, friends=friends_list)
 
 
 @app.route('/direct-messages/<int:friend_id>', methods=['GET', 'POST'])
@@ -454,14 +454,14 @@ def chat_with_friend(friend_id):
         db.session.commit()
         return redirect(url_for('chat_with_friend', friend_id=friend_id))
 
-    return render_template('chat_with_friend.html', friend=friend, messages=messages)
+    return render_template('chat_with_friend.html', user=current_user, friend=friend, messages=messages)
 
 
 @app.route('/group-chats')
 @login_required
 def group_chats():
     groups = current_user.groups
-    return render_template('group_chats.html', groups=groups)
+    return render_template('group_chats.html', user=current_user, groups=groups)
 
 
 @app.route('/group/<int:group_id>', methods=['GET', 'POST'])
@@ -480,7 +480,7 @@ def chat_with_group(group_id):
         return redirect(url_for('chat_with_group', group_id=group_id))
 
     messages = GroupMessage.query.filter_by(group_id=group_id).order_by(GroupMessage.timestamp.asc()).all()
-    return render_template('chat_with_group.html', group=group, messages=messages)
+    return render_template('chat_with_group.html', user=current_user, group=group, messages=messages)
 
 @app.route('/create-group', methods=['GET', 'POST'])
 @login_required
@@ -532,7 +532,7 @@ def invite_to_group(group_id):
     # Get the list of friends who are not yet in the group
     friends_not_in_group = [friend for friend in current_user.friends if friend not in group.members]
     
-    return render_template('invite_to_group.html', group=group, friends=friends_not_in_group)
+    return render_template('invite_to_group.html', user=current_user, group=group, friends=friends_not_in_group)
 
 @app.route('/join-room/<int:room_id>')
 @login_required
