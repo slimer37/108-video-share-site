@@ -6,7 +6,7 @@
 
 <div class="container">
 
-    <h3>New Post</h3>
+    <h3 class="section-header">New Post</h3>
     <form id="postForm" method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         
@@ -35,7 +35,7 @@
 </div>
 
 <div class="container">
-    <h3 class="all-public-posts">All Public Posts</h3>
+    <h3 class="all-public-posts section-header">Feed</h3>
     <div class="all-public-posts">
         <ul>
             {% for post in posts %}

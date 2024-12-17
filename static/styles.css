@@ -58,12 +58,18 @@ input {
     border-radius: 2px;
 }
 
+.section-header {
+    text-align: center;
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid gray;
+}
+
 /* Center the main container on the page */
 .container {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    text-align: center;
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -215,11 +221,9 @@ form .content-editable {
 
 /* Center the entire "All Public Posts" section */
 .all-public-posts {
-    text-align: center; /* Center-align text */
     margin-top: 20px;
 }
 
-/* Center the individual post content */
 .all-public-posts ul {
     list-style: none;
     padding: 0;
@@ -230,7 +234,6 @@ form .content-editable {
 }
 
 .all-public-posts ul li {
-    text-align: center; /* Center the content inside each post */
     margin-bottom: 15px;
     border: 1px solid #ccc;
     padding: 10px;
