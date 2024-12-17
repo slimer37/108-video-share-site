@@ -1,5 +1,10 @@
 header {
+    width: 100%;
     border-bottom: 1px solid #ddd;
+}
+
+.logo {
+    max-height: 150px; margin: auto
 }
 
 footer {
