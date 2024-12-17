@@ -1,3 +1,11 @@
+header {
+    border-bottom: 1px solid #ddd;
+}
+
+footer {
+    border-top: 1px solid #ddd;
+}
+
 /* Center the main container on the page */
 .container {
     max-width: 800px;
