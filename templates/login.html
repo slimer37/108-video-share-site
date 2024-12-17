@@ -7,7 +7,7 @@
     <div class="container">
         <form method="POST">
             {{ form.hidden_tag() }}
-                <h2>Log in</h2>
+                <h2>Login</h2>
                 <div class="login-field">
                     {{ form.username.label }}
                     {{ form.username(style="width:100%") }}
@@ -17,8 +17,7 @@
                     {{ form.password.label }}
                     {{ form.password(style="width:100%") }}
                 </div>
-                <br>
-                <button type="submit">Login</button>
+                <button type="submit" style="font-size: 10pt; width: 80%; margin-top: 30pt">Log in</button>
         </form>
     </div>
     <p style="text-align: center;">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
