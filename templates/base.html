@@ -6,17 +6,23 @@
     <title>{% block title %}SocialVisor{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://unpkg.com/picmo@latest/dist/umd/index.js"></script>
+
+    <!-- Oswald & Inter fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Oswald:wght@200..700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="page-container">
-        <header>
-            <h1>SocialVisor</h1>
+        <header class="title-header">
+            <h1 class="logotext">Infinihall</h1>
+            <img class="logo" src="{{ url_for('static', filename='img/logo2.svg') }}">
         </header>
         <main class="main-content">
             {% block content %}{% endblock %}
         </main>
         <footer>
-            <p>&copy; 2024 SocialVisor</p>
+            <p>&copy; 2024 Infinihall</p>
         </footer>
     </div>
 </body>

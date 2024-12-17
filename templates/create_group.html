@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Create New Group</title>
-</head>
-<body>
+{% extends 'logged_in.html' %}
+
+{% block title %}Create groups{% endblock %}
+
+{% block inner %}
+
+<div class="container">
     <h1>Create a New Group</h1>
     <form action="{{ url_for('create_group') }}" method="POST">
         <label for="group_name">Group Name:</label>
@@ -23,5 +23,6 @@
         <button type="submit">Create Group</button>
     </form>
     <a href="{{ url_for('group_chats') }}">Back to Group Chats</a>
-</body>
-</html>
+</div>
+
+{% endblock %}

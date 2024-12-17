@@ -184,7 +184,7 @@ def logout():
 @app.route('/account-settings')
 @login_required
 def account_settings():
-    return render_template('account_settings.html')
+    return render_template('account_settings.html', user=current_user)
 
 @app.route('/change-username', methods=['GET', 'POST'])
 @login_required
@@ -197,7 +197,7 @@ def change_username():
         flash('Your username has been updated successfully!', 'success')
         return redirect(url_for('account_settings'))
 
-    return render_template('change_username.html', form=form)
+    return render_template('change_username.html', user=current_user, form=form)
 
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
@@ -215,7 +215,7 @@ def change_password():
         flash('Your password has been updated successfully!', 'success')
         return redirect(url_for('dashboard'))
 
-    return render_template('change_password.html', form=form)
+    return render_template('change_password.html', user=current_user, form=form)
 
 # Dashboard route for posts
 @app.route('/dashboard', methods=['GET', 'POST'])
@@ -267,7 +267,7 @@ def watch_party():
         db.session.add(party)
         db.session.commit()
 
-    return render_template('watch_party.html', form=form, party=party)
+    return render_template('watch_party.html', user=current_user, form=form, party=party)
 
 # SocketIO Events for Real-Time Chat
 @socketio.on('join')
@@ -339,11 +339,9 @@ def handle_ice_candidate(data):
 @block_banned
 def friends():
     friends_list = current_user.friends
-    all_users = User.query.filter(User.id != current_user.id, User.is_admin == False).all()
-    return render_template('friends.html', friends=friends_list, all_users=all_users)
     # Exclude users who are already friends
-    all_users = User.query.filter(User.id != current_user.id, ~User.friends.any(id=current_user.id)).all()
-    return render_template('friends.html', friends=friends_list, all_users=all_users)
+    all_users = User.query.filter(User.id != current_user.id, User.is_admin == False, ~User.friends.any(id=current_user.id)).all()
+    return render_template('friends.html', user=current_user, friends=friends_list, all_users=all_users)
 
 @app.route('/add-friend/<int:friend_id>', methods=['POST'])
 @login_required
@@ -437,7 +435,7 @@ def reject_friend_request(request_id):
 @login_required
 def direct_messages():
     friends_list = current_user.friends
-    return render_template('direct_messages.html', friends=friends_list)
+    return render_template('direct_messages.html', user=current_user, friends=friends_list)
 
 
 @app.route('/direct-messages/<int:friend_id>', methods=['GET', 'POST'])
@@ -447,7 +445,7 @@ def chat_with_friend(friend_id):
     messages = DirectMessage.query.filter(
         ((DirectMessage.sender_id == current_user.id) & (DirectMessage.receiver_id == friend_id)) |
         ((DirectMessage.sender_id == friend_id) & (DirectMessage.receiver_id == current_user.id))
-    ).order_by(DirectMessage.timestamp).all()
+    ).order_by(DirectMessage.timestamp.desc()).all()
 
     if request.method == 'POST':
         message = request.form['message']
@@ -456,14 +454,14 @@ def chat_with_friend(friend_id):
         db.session.commit()
         return redirect(url_for('chat_with_friend', friend_id=friend_id))
 
-    return render_template('chat_with_friend.html', friend=friend, messages=messages)
+    return render_template('chat_with_friend.html', user=current_user, friend=friend, messages=messages)
 
 
 @app.route('/group-chats')
 @login_required
 def group_chats():
     groups = current_user.groups
-    return render_template('group_chats.html', groups=groups)
+    return render_template('group_chats.html', user=current_user, groups=groups)
 
 
 @app.route('/group/<int:group_id>', methods=['GET', 'POST'])
@@ -481,8 +479,8 @@ def chat_with_group(group_id):
         db.session.commit()
         return redirect(url_for('chat_with_group', group_id=group_id))
 
-    messages = GroupMessage.query.filter_by(group_id=group_id).order_by(GroupMessage.timestamp.asc()).all()
-    return render_template('chat_with_group.html', group=group, messages=messages)
+    messages = GroupMessage.query.filter_by(group_id=group_id).order_by(GroupMessage.timestamp.desc()).all()
+    return render_template('chat_with_group.html', user=current_user, group=group, messages=messages)
 
 @app.route('/create-group', methods=['GET', 'POST'])
 @login_required
@@ -508,7 +506,7 @@ def create_group():
         return redirect(url_for('group_chats'))
 
     friends_list = current_user.friends
-    return render_template('create_group.html', friends=friends_list)
+    return render_template('create_group.html', user=current_user, friends=friends_list)
 
 @app.route('/invite-to-group/<int:group_id>', methods=['GET', 'POST'])
 @login_required
@@ -534,7 +532,7 @@ def invite_to_group(group_id):
     # Get the list of friends who are not yet in the group
     friends_not_in_group = [friend for friend in current_user.friends if friend not in group.members]
     
-    return render_template('invite_to_group.html', group=group, friends=friends_not_in_group)
+    return render_template('invite_to_group.html', user=current_user, group=group, friends=friends_not_in_group)
 
 @app.route('/join-room/<int:room_id>')
 @login_required
@@ -543,7 +541,7 @@ def join_room_page(room_id):
     if party.is_private and current_user not in party.host.friends:
         flash('This room is private. Only friends can join.')
         return redirect(url_for('available_rooms'))
-    return render_template('watch_party.html', party=party)
+    return render_template('watch_party.html', user=current_user, party=party)
 
 @app.route('/available-rooms')
 @login_required
@@ -558,7 +556,7 @@ def available_rooms():
 
     rooms = query.all()
 
-    return render_template('available_rooms.html', rooms=rooms)
+    return render_template('available_rooms.html', user=current_user, rooms=rooms)
 
 @app.route('/add-reaction/<int:post_id>', methods=['POST'])
 @login_required

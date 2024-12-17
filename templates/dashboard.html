@@ -1,69 +1,53 @@
-{% extends 'base.html' %}
+{% extends 'logged_in.html' %}
 
 {% block title %}Dashboard{% endblock %}
 
-{% block content %}
+{% block inner %}
 
-<div class="container">
-    <h2>
-        Welcome, {{ user.username }}!
-        {% if user.profile_photo %}
-            <img src="{{ user.profile_photo }}" alt="Profile Photo" style="width: 40px; height: 40px; border-radius: 50%; margin-left: 10px;">
-        {% endif %}
-        <a href="{{ url_for('account_settings') }}" class="btn btn-primary" style="margin-left: 10px;">Account Settings</a>
-    </h2>
+<div style="display: flex; align-items: fill;">
+    <div class="container" style="width: 30%">
+        <h3 class="section-header">New Post</h3>
+        <form id="postForm" method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <textarea class="post-textbox" id="content" name="content" placeholder="Tell the world something!" rows="3"></textarea>
+            
+            <div class="center-form-elements" style="height: 30px;">
+                <div>
+                    <!-- Emoji Picker Trigger Button -->
+                    <button type="button" id="emoji-btn" class="btn" style="height: 100%;">😀</button>
+                </div>
+                
+                <div>
+                    <label for="imageInput" class="btn" style="margin:0;">Attach Image</label>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+                </div>
 
-    <!-- Navigation Tabs -->
-    <nav>
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('watch_party') }}">Watch Party</a>
-        <a href="{{ url_for('friends') }}">Friends</a>
-        <a href="{{ url_for('available_rooms') }}">Join Room</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
-    </nav>
-
-    <h3>Create a Post</h3>
-    <form id="postForm" method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        <div>
-            <label for="content">Content</label>
-            <div style="display: flex; align-items: center;">
-                <textarea id="content" name="content" placeholder="Write something here..." rows="3"></textarea>
-                <!-- Emoji Picker Trigger Button -->
-                <button type="button" id="emoji-btn" class="emoji-button" style="margin-left: 10px;">😀</button>
+                {{ form.is_public.label }} {{ form.is_public }}
+                
+                <button type="submit" id="postButton" class="btn">Post</button>
             </div>
-            <!-- Root container for PicMo Picker -->
-            <div id="emoji-picker-container" style="position: relative; z-index: 10;"></div>
-        </div>        
-        </div>
-        <div class="center-form-elements">
-            <label for="imageInput" class="btn btn-secondary">Choose an Image</label>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;" />
-        </div>
-        
-        <div class="center-form-elements">
-            {{ form.is_public.label }} {{ form.is_public }}
-        </div>
-        
-        <div class="center-form-elements">
-            <button type="submit" id="postButton" class="btn btn-primary">Post</button>
-        </div>
-        
-    </form>
+            
+            <div id="emoji-picker-container"></div>
+            
+        </form>
+    </div>
     
-
-    <h3 class="all-public-posts">All Public Posts</h3>
-    <div class="all-public-posts">
-        <ul>
-            {% for post in posts %}
-            <li>
-                <strong>{{ post.user.username }}:</strong>
-                <div>{{ post.content|safe }}</div>
-            </li>
-            {% endfor %}
-        </ul>
+    <div class="container" style="flex:1">
+        <h3 class="all-public-posts section-header">Feed</h3>
+        <div class="all-public-posts">
+            <ul>
+                {% for post in posts %}
+                <li>
+                    <strong>{{ post.user.username }}:</strong>
+                    <div>{{ post.content|safe }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 </div>
+
     
 <!-- JavaScript -->
 <script>
@@ -72,25 +56,6 @@
         const imageInput = document.getElementById("imageInput");
         const emojiButton = document.getElementById("emoji-btn");
         const pickerContainer = document.getElementById("emoji-picker-container");
-        const placeholderText = "Write something here...";
-
-        // Placeholder Handling
-        function setPlaceholder() {
-            if (hiddenTextarea.value.trim() === "") {
-                hiddenTextarea.value = placeholderText;
-                hiddenTextarea.style.color = "#aaa";
-            }
-        }
-
-        hiddenTextarea.addEventListener("focus", () => {
-            if (hiddenTextarea.value === placeholderText) {
-                hiddenTextarea.value = "";
-                hiddenTextarea.style.color = "#000";
-            }
-        });
-
-        hiddenTextarea.addEventListener("blur", setPlaceholder);
-        setPlaceholder();
 
         // Image Upload Handling
         if (imageInput) {

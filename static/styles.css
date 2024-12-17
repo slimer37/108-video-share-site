@@ -1,13 +1,116 @@
+.title-header {
+    border-bottom: 1px solid #ddd;
+
+    padding: 10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: white;
+
+    margin: 0;
+}
+
+.logo {
+    max-height: 30pt;
+}
+
+.logotext {
+    font-family: "Oswald", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+
+    margin: 0;
+
+    color: #0050ac;
+}
+
+footer {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background-color: white;
+
+    color: black;
+
+    /* extend to bottom */
+    
+    box-shadow: 0 50vh 0 50vh white;
+}
+
+.login-container {
+    padding: 100px 0;
+}
+
+.login-field {
+    text-align: left;
+    width: 50%;
+    margin: auto;
+}
+
+input {
+    border: 1px solid black;
+    font-size: 10pt;
+    height: 15pt;
+    border-radius: 2px;
+}
+
+.section-header {
+    text-align: center;
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid gray;
+}
+
 /* Center the main container on the page */
 .container {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    text-align: center; /* Left-align text */
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+    color: black;
+}
+
+html, body, .page-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    /* default font */
+    font-family: "Inter", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+
+    background-color: #10263c;
+
+    color: white;
+}
+
+#emoji-picker-container {
+    text-align: left;
+    position: absolute;
+    z-index: 10;
+}
+
+.container a {
+    color: #0050ac;
+}
+
+a {
+    color: #ccc;
 }
 
 /* Headings and general text alignment */
@@ -15,43 +118,52 @@ h1, h2 {
     text-align: center;
 }
 
-form {
-    text-align: center; /* Left-align forms */
-}
-
-/* Center the "All Public Posts" container */
-ul {
-    list-style-type: none; /* Remove bullet points */
-    padding: 0;
+.nav-container {
     width: 100%;
-    max-width: 600px;
-    margin: 0 auto; /* Center the container horizontally */
-    text-align: center; /* Center-align the text */
+    padding: 5px 0;
+
+    background-color: #eee;
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    border-bottom: 1px solid gray;
 }
 
-/* Style individual list items */
-ul li {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    text-align: center; /* Center-align the text inside the box */
+.bar-username {
+    color: black;
 }
 
+.name-area {
+    padding: 0px 10px;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
 
 /* Navigation bar styling */
 nav {
-    margin-bottom: 20px;
+    padding: 0px 10px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
 }
 
-nav a {
-    margin: 0 10px;
+.nav-link {
     text-decoration: none;
-    color: #007bff;
+    color: #007bff !important;
 }
 
-nav a:hover {
+.nav-link:hover {
     text-decoration: underline;
 }
 
@@ -69,13 +181,13 @@ nav a:hover {
     background-color: #e6f7ff;
 }
 
-/* Textarea styling */
-textarea {
-    width: 100%;
+.post-textbox {
+    display: block;
+    width: 90%;
+    margin: 10px auto;
     height: 100px;
-    margin-bottom: 10px;
     padding: 10px;
-    font-size: 14px;
+    font-size: 10pt;
 }
 
 /* Style for forms and inputs */
@@ -101,58 +213,26 @@ form .content-editable {
     
 }
 
-form button {
-    width: 100%;
+.btn {
+    text-decoration: none;
     padding: 10px;
+    font-size: 10pt;
     background-color: #007bff;
     border: none;
-    color: white;
+    color: white !important;
     border-radius: 5px;
     cursor: pointer;
 }
 
-form button:hover {
+.btn:hover {
     background-color: #0056b3;
-}
-
-/* Profile photo and username */
-h2 {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-h2 img {
-    margin-left: 10px;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-}
-
-/* Public posts styling */
-ul {
-    list-style-type: none;
-    padding: 0;
-    width: 100%;
-    max-width: 600px;
-}
-
-ul li {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
 }
 
 /* Center the entire "All Public Posts" section */
 .all-public-posts {
-    text-align: center; /* Center-align text */
     margin-top: 20px;
 }
 
-/* Center the individual post content */
 .all-public-posts ul {
     list-style: none;
     padding: 0;
@@ -163,7 +243,6 @@ ul li {
 }
 
 .all-public-posts ul li {
-    text-align: center; /* Center the content inside each post */
     margin-bottom: 15px;
     border: 1px solid #ccc;
     padding: 10px;
@@ -179,27 +258,63 @@ ul li {
     display: flex;
     justify-content: center; /* Center horizontally */
     align-items: center;     /* Align items in the middle */
-    margin: 10px 0;          /* Add spacing between elements */
-   
+    gap: 10px;          /* Add spacing between elements */
 }
 
-/* Style for the emoji picker button */
-.emoji-button {
-    font-size: 0.8rem;      /* Smaller text size for the emoji */
-    padding: 2px 6px;       /* Smaller padding for a smaller button */
-    height: 40px;           /* Adjust the button height */
-    width: 40px;            /* Adjust the button width */
-    line-height: 1;         /* Adjust line spacing */
-    display: flex;          /* Align content (emoji) properly */
+.friend-list-item {
+    list-style-type: none;
+    list-style: none;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 10px;
+
+    display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: #007bff; /* Button color */
-    color: #fff;            /* Text color */
-    border: none;           /* Remove border */
-    /*border-radius: 50%;     /* Optional: Make it circular */
-    cursor: pointer;        /* Pointer cursor for better UX */
+
+    height: 50px;
+
+    gap: 20px;
 }
 
-.emoji-button:hover {
-    background-color: #0056b3; /* Slightly darker on hover */
+.watch-party-item {
+    list-style-type: none;
+    list-style: none;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 10px;
+
+    display: flex;
+    align-items: center;
+
+    height: 50px;
+
+    gap: 20px;
+}
+
+.profile-img {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-position: center;
+    background-size: cover;
+}
+
+.chat-box {
+    display: flex;
+    flex-direction: column-reverse;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    height: 60vh;
+    overflow-y: scroll;
+    padding: 10px;
+}
+
+.chat-message {
+    padding: 0;
+    margin: 0;
+    height: 20pt;
+    font-size: 11pt
 }

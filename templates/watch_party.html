@@ -1,28 +1,26 @@
-<!-- templates/watch_party.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Watch Party: {{ party.name }}</title>
-</head>
-<body>
+{% extends 'logged_in.html' %}
+
+{% block title %}Watch Party{% endblock %}
+
+{% block inner %}
+
 <div class="container">
     <h1>Watch Party: {{ party.name }}</h1>
 
     <!-- Room Controls -->
     <div class="room-controls" style="margin-bottom: 20px;">
-        <button id="hostRoomBtn">Host Room</button>
-        <button id="copyLinkBtn">Copy Invite Link</button>
-        <label for="privacyToggle">Private Room:</label>
-        <input type="checkbox" id="privacyToggle">
+        <button class="btn" id="hostRoomBtn">Host Room</button>
+        <button class="btn" id="copyLinkBtn">Copy Invite Link</button>
     </div>
+    <label for="privacyToggle">Private Room:</label>
+    <input type="checkbox" id="privacyToggle" style="vertical-align: middle;">
 
     <!-- Screen Sharing Section -->
     <div class="screen-share-section">
         <h3>Screen Sharing</h3>
-        <button id="startShare">Start Screen Share with Audio</button>
-        <button id="stopShare" disabled>Stop Screen Share</button>
-        <button id="muteMicBtn">Mute Mic</button>
+        <button class="btn" id="startShare">Start Screen Share with Audio</button>
+        <button class="btn" id="stopShare" disabled>Stop Screen Share</button>
+        <button class="btn" id="muteMicBtn">Mute Mic</button>
         <video id="sharedScreen" autoplay playsinline style="width: 100%; height: auto; margin-top: 10px; background-color: black;"></video>
     </div>
 
@@ -203,6 +201,4 @@
     });
 </script>
 
-<a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
-</body>
-</html>
+{% endblock %}

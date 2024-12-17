@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="nav-container">
+    <nav>
+        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a class="nav-link" href="{{ url_for('watch_party') }}">Watch Party</a>
+        <a class="nav-link" href="{{ url_for('friends') }}">Friends</a>
+        <a class="nav-link" href="{{ url_for('direct_messages') }}">Direct Messages</a>
+        <a class="nav-link" href="{{ url_for('group_chats') }}">Group Chats</a>
+        <a class="nav-link" href="{{ url_for('available_rooms') }}">Join Room</a>
+    </nav>
+
+
+    <div class="name-area">
+        <span class="bar-username">Hello, {{ user.username }}</span>
+        <a href="{{ url_for('account_settings') }}" style="height: 24px;">
+            {% if user.profile_photo %}
+                <div style="background-image: url('{{ user.profile_photo }}')" title="Profile Photo" class="profile-img"></div>
+            {% else %}
+                <img src="{{ url_for('static', filename='img/noprofile.svg') }}" alt="Profile Photo" class="profile-img">
+            {% endif %}
+        </a>
+        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+    </div>
+</div>
+
+{% block inner %}{% endblock %}
+
+{% endblock %}
