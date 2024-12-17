@@ -391,7 +391,7 @@ def friends():
         ~User.received_requests.any(sender_id=current_user.id)
     ).all()
 
-    return render_template('friends.html', friends=friends_list, all_users=all_users)
+    return render_template('friends.html', user=current_user, friends=friends_list, all_users=all_users)
 
 @app.route('/add-friend/<int:friend_id>', methods=['POST'])
 @login_required

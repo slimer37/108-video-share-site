@@ -46,19 +46,7 @@
             </ul>
         </div>
     </div>
-    
-    <button type="submit" id="postButton">Post</button>
-</form>
-
-<h3>All Public Posts</h3>
-<ul>
-    {% for post in posts %}
-    <li>
-        <strong>{{ post.user.username }}:</strong>
-        <div>{{ post.content|safe }}</div>
-    </li>
-    {% endfor %}
-</ul>
+</div>
 
 <!-- JavaScript for handling paste, drag-and-drop, and file input events -->
 <script>
