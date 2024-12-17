@@ -13,12 +13,12 @@
 
 
     <div class="name-area">
-        {{ user.username }}
+        <span class="bar-username">Hello, {{ user.username }}</span>
         {% if user.profile_photo %}
-            <img src="{{ user.profile_photo }}" alt="Profile Photo" style="width: 40px; height: 40px; border-radius: 50%; margin-left: 10px;">
+            <img src="{{ user.profile_photo }}" alt="Profile Photo" style="width: 24px; height: 24px; border-radius: 50%;">
         {% endif %}
-        <a href="{{ url_for('account_settings') }}" class="btn btn-primary" style="margin-left: 10px;">
-            <img class="logo" src="static/img/manageacct.svg" style="height: 20pt">
+        <a href="{{ url_for('account_settings') }}" class="btn btn-primary" style="height: 24px;">
+            <img class="logo" src="static/img/manageacct.svg" style="height: 100%" alt="Account Settings Button">
         </a>
     </div>
 </div>
