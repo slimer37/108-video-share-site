@@ -246,9 +246,17 @@ def handle_host_room(data):
 
 @socketio.on('screenShare')
 def handle_screen_share(data):
-    room = data['room']
-    track = data['track']
+    print(f"Received data: {data}")  # Log the received data for debugging
+    room = data.get('room')
+    track = data.get('track')
+
+    if not room or not track:
+        print("Error: 'room' or 'track' key missing in data payload.")
+        return  # Early exit if validation fails
+
+    print(f"Emitting screen share: room={room}, track={track}")
     emit('screenShare', {'track': track}, room=room, include_self=False)
+
 
 # New event to notify users when screen sharing starts
 @socketio.on('screenShareStarted')
