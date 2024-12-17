@@ -10,7 +10,7 @@
     <form id="postForm" method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         
-        <textarea class="post-textbox" id="content" name="content" rows="3"></textarea>
+        <textarea class="post-textbox" id="content" name="content" placeholder="Tell the world something!" rows="3"></textarea>
         
         <div class="center-form-elements">
             <div>
@@ -55,25 +55,6 @@
         const imageInput = document.getElementById("imageInput");
         const emojiButton = document.getElementById("emoji-btn");
         const pickerContainer = document.getElementById("emoji-picker-container");
-        const placeholderText = "Tell the world something!";
-
-        // Placeholder Handling
-        function setPlaceholder() {
-            if (hiddenTextarea.value.trim() === "") {
-                hiddenTextarea.value = placeholderText;
-                hiddenTextarea.style.color = "#aaa";
-            }
-        }
-
-        hiddenTextarea.addEventListener("focus", () => {
-            if (hiddenTextarea.value === placeholderText) {
-                hiddenTextarea.value = "";
-                hiddenTextarea.style.color = "#000";
-            }
-        });
-
-        hiddenTextarea.addEventListener("blur", setPlaceholder);
-        setPlaceholder();
 
         // Image Upload Handling
         if (imageInput) {
