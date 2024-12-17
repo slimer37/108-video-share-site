@@ -11,7 +11,7 @@
         {{ form.hidden_tag() }}
         <div>
             <div style="display: flex; align-items: center;">
-                <textarea id="content" name="content" placeholder="Write something here..." rows="3"></textarea>
+                <textarea id="content" name="content" rows="3"></textarea>
                 <!-- Emoji Picker Trigger Button -->
                 <button type="button" id="emoji-btn" class="emoji-button" style="margin-left: 10px;">😀</button>
             </div>
@@ -55,7 +55,7 @@
         const imageInput = document.getElementById("imageInput");
         const emojiButton = document.getElementById("emoji-btn");
         const pickerContainer = document.getElementById("emoji-picker-container");
-        const placeholderText = "Write something here...";
+        const placeholderText = "Tell the world something!";
 
         // Placeholder Handling
         function setPlaceholder() {
