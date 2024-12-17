@@ -1,11 +1,27 @@
 header {
     width: 100%;
     border-bottom: 1px solid #ddd;
+
+    padding: 10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .logo {
     max-height: 50px;
-    margin: auto;
+}
+
+.logotext {
+    font-family: "Oswald", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+
+    margin: 0;
+
+    color: #0050ac;
 }
 
 footer {
