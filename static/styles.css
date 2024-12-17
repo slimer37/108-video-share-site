@@ -256,3 +256,25 @@ form .content-editable {
     align-items: center;     /* Align items in the middle */
     gap: 10px;          /* Add spacing between elements */
 }
+
+.friend-list-item {
+    list-style-type: none;
+    list-style: none;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 10px;
+
+    display: flex;
+    align-items: center;
+
+    height: 50px;
+
+    gap: 20px;
+}
+
+.profile-img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}

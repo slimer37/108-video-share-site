@@ -339,11 +339,9 @@ def handle_ice_candidate(data):
 @block_banned
 def friends():
     friends_list = current_user.friends
-    all_users = User.query.filter(User.id != current_user.id, User.is_admin == False).all()
-    return render_template('friends.html', friends=friends_list, all_users=all_users)
     # Exclude users who are already friends
-    all_users = User.query.filter(User.id != current_user.id, ~User.friends.any(id=current_user.id)).all()
-    return render_template('friends.html', friends=friends_list, all_users=all_users)
+    all_users = User.query.filter(User.id != current_user.id, User.is_admin == False, ~User.friends.any(id=current_user.id)).all()
+    return render_template('friends.html', user=current_user, friends=friends_list, all_users=all_users)
 
 @app.route('/add-friend/<int:friend_id>', methods=['POST'])
 @login_required
