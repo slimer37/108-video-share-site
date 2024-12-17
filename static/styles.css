@@ -313,6 +313,10 @@ form .content-editable {
 }
 
 .chat-message {
+    display: flex;
+    align-items: center;
+    gap: 5pt;
+
     padding: 0;
     margin: 0;
     height: 20pt;
