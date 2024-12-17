@@ -184,6 +184,9 @@ def dashboard():
         db.session.commit()
         flash('Post created successfully!')
 
+        # Redirect to the dashboard to avoid duplicate submissions
+        return redirect(url_for('dashboard'))
+
     posts = Post.query.filter_by(is_public=True).all()
     return render_template('dashboard.html', user=current_user, form=form, posts=posts)
 
