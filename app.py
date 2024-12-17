@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 from models import db, User, Post, WatchParty, FriendRequest, DirectMessage, ChatGroup, GroupMessage
 from forms import ChangePasswordForm, ChangeUsernameForm, LoginForm, RegisterForm, PostForm, WatchPartyForm
 from admin_routes import admin_bp, block_banned
+import bleach
+from PIL import Image
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -87,7 +89,15 @@ def upload_image():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
+
+        # Resize image if it's larger than 512 pixels
+        image = Image.open(file)
+        max_size = (512, 512)
+        image.thumbnail(max_size)
+
+        # Save the resized image
+        image.save(filepath)
+
         image_url = f"/static/uploads/{filename}"
         return jsonify({"image_url": image_url}), 200
 
@@ -150,12 +160,26 @@ def home():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
+        # Check if the username or email already exists
+        existing_user = User.query.filter(
+            (User.username == form.username.data) | (User.email == form.email.data)
+        ).first()
+
+        if existing_user:
+            if existing_user.username == form.username.data:
+                flash('Username is already taken. Please choose a different one.', 'danger')
+            if existing_user.email == form.email.data:
+                flash('Email is already in use. Please use a different email.', 'danger')
+            return render_template('register.html', form=form)
+
+        # Hash the password and create a new user
         hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        flash('Registration successful! Please login.')
+        flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
+
     return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -225,12 +249,19 @@ def dashboard():
     form = PostForm()
     if form.validate_on_submit():
         # Get the content (HTML) from the hidden textarea
-        content = request.form['content']
-        is_public = form.is_public.data
+        raw_content = request.form['content']
 
-        # Save the post
+        # Sanitize the content to prevent XSS
+        allowed_tags = ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'img']
+        allowed_attributes = {'img': ['src', 'alt']}
+        sanitized_content = bleach.clean(raw_content, tags=allowed_tags, attributes=allowed_attributes)
+
+        # Explicitly set the post as public
+        is_public = True
+
+        # Save the sanitized post
         new_post = Post(
-            content=content,
+            content=sanitized_content,
             is_public=is_public,
             user_id=current_user.id
         )
@@ -238,8 +269,12 @@ def dashboard():
         db.session.commit()
         flash('Post created successfully!')
 
+        # Redirect to the dashboard to avoid duplicate submissions
+        return redirect(url_for('dashboard'))
+
     posts = Post.query.filter_by(is_public=True).all()
     return render_template('dashboard.html', user=current_user, form=form, posts=posts)
+
 
 # Watch Party route
 @app.route('/watch-party', methods=['GET', 'POST'])
@@ -300,9 +335,17 @@ def handle_host_room(data):
 
 @socketio.on('screenShare')
 def handle_screen_share(data):
-    room = data['room']
-    track = data['track']
+    print(f"Received data: {data}")  # Log the received data for debugging
+    room = data.get('room')
+    track = data.get('track')
+
+    if not room or not track:
+        print("Error: 'room' or 'track' key missing in data payload.")
+        return  # Early exit if validation fails
+
+    print(f"Emitting screen share: room={room}, track={track}")
     emit('screenShare', {'track': track}, room=room, include_self=False)
+
 
 # New event to notify users when screen sharing starts
 @socketio.on('screenShareStarted')
@@ -339,9 +382,16 @@ def handle_ice_candidate(data):
 @block_banned
 def friends():
     friends_list = current_user.friends
-    # Exclude users who are already friends
-    all_users = User.query.filter(User.id != current_user.id, User.is_admin == False, ~User.friends.any(id=current_user.id)).all()
-    return render_template('friends.html', user=current_user, friends=friends_list, all_users=all_users)
+
+    # Exclude users who are already friends or have pending friend requests
+    all_users = User.query.filter(
+        User.id != current_user.id,
+        ~User.friends.any(id=current_user.id),
+        ~User.sent_requests.any(receiver_id=User.id),
+        ~User.received_requests.any(sender_id=current_user.id)
+    ).all()
+
+    return render_template('friends.html', friends=friends_list, all_users=all_users)
 
 @app.route('/add-friend/<int:friend_id>', methods=['POST'])
 @login_required
@@ -406,11 +456,19 @@ def accept_friend_request(request_id):
     friend_request = FriendRequest.query.get_or_404(request_id)
 
     if friend_request.receiver_id == current_user.id:
-        # Add each other as friends
+        # Add each other as friends (mutual friendship)
         sender = User.query.get(friend_request.sender_id)
-        current_user.friends.append(sender)
+        
+        if sender not in current_user.friends:
+            current_user.friends.append(sender)
+        
+        if current_user not in sender.friends:
+            sender.friends.append(current_user)
+        
+        # Delete the friend request after acceptance
         db.session.delete(friend_request)
         db.session.commit()
+        
         flash(f'You are now friends with {sender.username}.')
     else:
         flash('Invalid friend request.')

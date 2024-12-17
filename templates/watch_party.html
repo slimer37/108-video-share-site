@@ -34,20 +34,43 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
 <script>
     const socket = io.connect();
     const room = "{{ party.id }}";
     let peerConnection;
     let micTrack;
     let screenStream;
+    let isScreenSharing = false;
     const sharedScreen = document.getElementById('sharedScreen');
     const startShareBtn = document.getElementById('startShare');
     const stopShareBtn = document.getElementById('stopShare');
     const muteMicBtn = document.getElementById('muteMicBtn');
     const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    // Track if screen is being shared
-    let isScreenSharing = false;
+    // Ensure PeerConnection exists only once
+    function createPeerConnection() {
+        if (peerConnection) return;
+
+        peerConnection = new RTCPeerConnection(configuration);
+
+        peerConnection.ontrack = (event) => {
+            console.log("Remote track received.");
+            sharedScreen.srcObject = event.streams[0];
+        };
+
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                socket.emit('ice-candidate', { room: room, candidate: event.candidate });
+            }
+        };
+
+        peerConnection.onconnectionstatechange = () => {
+            console.log("Connection state:", peerConnection.connectionState);
+        };
+
+        console.log("PeerConnection created.");
+    }
 
     // Join the room
     socket.emit('join', { room: room });
@@ -66,104 +89,58 @@
         }
     }
 
-    window.onbeforeunload = () => {
-        socket.emit('leave', { room: room });
-        stopScreenShare();
-    };
-
-    // Start screen sharing with WebRTC
     startShareBtn.addEventListener('click', async () => {
-        if (isScreenSharing) {
-            alert('Screen sharing is already active.');
-            return;
-        }
+        if (isScreenSharing) return;
 
         try {
             screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
             sharedScreen.srcObject = screenStream;
-            startShareBtn.disabled = true;
-            stopShareBtn.disabled = false;
             isScreenSharing = true;
 
-            peerConnection = new RTCPeerConnection(configuration);
+            createPeerConnection();
             screenStream.getTracks().forEach(track => peerConnection.addTrack(track, screenStream));
 
-            // Add microphone track
-            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            micTrack = micStream.getAudioTracks()[0];
-            peerConnection.addTrack(micTrack, micStream);
-
-            peerConnection.onicecandidate = event => {
-                if (event.candidate) {
-                    socket.emit('ice-candidate', { room: room, candidate: event.candidate });
-                }
-            };
+            socket.emit('screenShare', { room: room });
 
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
             socket.emit('offer', { room: room, offer: offer });
 
-            // Notify others that screen sharing has started
-            socket.emit('screenShare', { room: room });
+            startShareBtn.disabled = true;
+            stopShareBtn.disabled = false;
         } catch (err) {
-            console.error('Error sharing screen:', err);
-            alert('Screen sharing failed: ' + err.message);
+            console.error("Screen share error:", err);
         }
     });
 
-    stopShareBtn.addEventListener('click', stopScreenShare);
-
-    function stopScreenShare() {
+    stopShareBtn.addEventListener('click', () => {
         if (sharedScreen.srcObject) {
             sharedScreen.srcObject.getTracks().forEach(track => track.stop());
             sharedScreen.srcObject = null;
-            startShareBtn.disabled = false;
-            stopShareBtn.disabled = true;
-            isScreenSharing = false;
-
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-
-            // Notify others that screen sharing has stopped
-            socket.emit('screenShareStopped', { room: room });
         }
-    }
 
-    muteMicBtn.addEventListener('click', () => {
-        if (micTrack) {
-            micTrack.enabled = !micTrack.enabled;
-            muteMicBtn.textContent = micTrack.enabled ? 'Mute Mic' : 'Unmute Mic';
-        } else {
-            alert('Microphone not available.');
+        if (peerConnection) {
+            peerConnection.close();
+            peerConnection = null;
         }
+
+        socket.emit('screenShareStopped', { room: room });
+        isScreenSharing = false;
+        startShareBtn.disabled = false;
+        stopShareBtn.disabled = true;
     });
 
     socket.on('offer', async (data) => {
-        if (!peerConnection) {
-            peerConnection = new RTCPeerConnection(configuration);
-        }
-
-        peerConnection.ontrack = event => {
-            sharedScreen.srcObject = event.streams[0];
-        };
-
-        peerConnection.onicecandidate = event => {
-            if (event.candidate) {
-                socket.emit('ice-candidate', { room: room, candidate: event.candidate });
-            }
-        };
-
+        if (!peerConnection) createPeerConnection();
         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
         socket.emit('answer', { room: room, answer: answer });
     });
 
-    socket.on('answer', (data) => {
+    socket.on('answer', async (data) => {
         if (peerConnection) {
-            peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
         }
     });
 
@@ -173,27 +150,16 @@
         }
     });
 
-    socket.on('screenShare', () => {
-        alert('Screen sharing has started in the room.');
-    });
-
     socket.on('screenShareStopped', () => {
-        alert('Screen sharing has stopped.');
+        console.log("Screen sharing stopped.");
         sharedScreen.srcObject = null;
     });
 
     document.getElementById('copyLinkBtn').addEventListener('click', () => {
-        if ("{{ party.id }}") {
-            const inviteLink = `${window.location.origin}/join-room/{{ party.id }}`;
-            navigator.clipboard.writeText(inviteLink).then(() => {
-                alert('Invite link copied to clipboard!');
-            });
-        } else {
-            alert('Error: Room ID is missing.');
-        }
+        const inviteLink = `${window.location.origin}/join-room/{{ party.id }}`;
+        navigator.clipboard.writeText(inviteLink).then(() => alert("Link copied."));
     });
 
-    // Host room function
     document.getElementById('hostRoomBtn').addEventListener('click', () => {
         const isPrivate = document.getElementById('privacyToggle').checked;
         socket.emit('hostRoom', { room: room, isPrivate: isPrivate });

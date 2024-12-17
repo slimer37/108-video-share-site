@@ -46,10 +46,21 @@
             </ul>
         </div>
     </div>
-</div>
-
     
-<!-- JavaScript -->
+    <button type="submit" id="postButton">Post</button>
+</form>
+
+<h3>All Public Posts</h3>
+<ul>
+    {% for post in posts %}
+    <li>
+        <strong>{{ post.user.username }}:</strong>
+        <div>{{ post.content|safe }}</div>
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- JavaScript for handling paste, drag-and-drop, and file input events -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const hiddenTextarea = document.getElementById("content");

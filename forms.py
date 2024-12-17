@@ -46,7 +46,7 @@ class RegisterForm(FlaskForm):
 
 class PostForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
-    is_public = BooleanField('Public Post')
+    is_public = BooleanField('Public Post', default=True)
     submit = SubmitField('Create Post')
 
 class WatchPartyForm(FlaskForm):
