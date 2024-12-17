@@ -3,44 +3,45 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
+<div class="form-container">
+    <h2>Register</h2>
 
-<div class="container">
-    <div class="form-container">
-        <h2 class="section-header">Register</h2>
-      
-        <!-- Display flashed messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-      
-        <form method="POST">
-            {{ form.hidden_tag() }}
-    
-            <div style="margin: 10px;">
-                <div class="login-field">
-                    {{ form.username.label }}
-                    {{ form.username(style="width:100%") }}
-                </div>
-                <br>
-                <div class="login-field">
-                    {{ form.email.label }}
-                    {{ form.email(style="width:100%") }}
-                </div>
-                <br>
-                <div class="login-field">
-                    {{ form.password.label }}
-                    {{ form.password(style="width:100%") }}
-                </div>
+    <!-- Display flashed messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
             </div>
-            <br>
-            <button type="submit" class="btn" style="display: block; width: 80%; margin: auto">Register</button>
-        </form>
-    </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.username.label }}<br>
+            {{ form.username(size=30) }}
+        </div>
+        <div>
+            {{ form.email.label }}<br>
+            {{ form.email(size=30) }}
+        </div>
+        <div>
+            {{ form.password.label }}<br>
+            {{ form.password(size=30) }}
+        </div>
+        <button type="submit">Register</button>
+    </form>
 </div>
+
+<!-- Clear flashed messages after displaying -->
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.flash-messages .alert');
+            alerts.forEach(alert => alert.remove());
+        }, 3000);  // Remove alerts after 5 seconds
+    });
+</script>
 {% endblock %}

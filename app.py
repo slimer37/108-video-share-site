@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, session
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -203,6 +203,9 @@ def login():
 @login_required
 def logout():
     logout_user()
+    # Clear all flashed messages and the session
+    session.clear()
+    flash('You have been logged out successfully.', 'success')
     return redirect(url_for('login'))
 
 @app.route('/account-settings')
