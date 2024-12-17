@@ -17,7 +17,10 @@
                     {{ form.password.label }}
                     {{ form.password(style="width:100%") }}
                 </div>
-                <button type="submit" style="font-size: 10pt; width: 80%; margin-top: 30pt">Log in</button>
+
+                <div style="width: 100%; margin-top: 30px" >
+                    <button type="submit" style="width: 50%; margin: auto; display: block" class="btn">Log in</button>
+                </div>
         </form>
     </div>
     <p style="text-align: center;">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
