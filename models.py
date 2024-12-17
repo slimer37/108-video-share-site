@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from sqlalchemy import Column, Text
+from sqlalchemy.dialects.postgresql import JSON
 
 db = SQLAlchemy()
 
@@ -18,6 +20,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     is_banned = db.Column(db.Boolean, default=False)
+    profile_photo = db.Column(db.String(300), nullable=True)  # Path to profile photo
     posts = db.relationship('Post', backref='user', lazy=True)
     watch_parties = db.relationship('WatchParty', backref='host', lazy=True)
     friends = db.relationship('User', secondary=friends_table,
@@ -40,7 +43,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     is_public = db.Column(db.Boolean, default=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
+    reactions = db.Column(JSON, default={}) 
 
 class WatchParty(db.Model):
     id = db.Column(db.Integer, primary_key=True)

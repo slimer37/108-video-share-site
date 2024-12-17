@@ -1,6 +1,19 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, BooleanField, URLField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, URL
+from wtforms.validators import DataRequired, Email, EqualTo, Length, URL, ValidationError
+from models import User
+
+class ChangeUsernameForm(FlaskForm):
+    new_username = StringField('New Username', validators=[
+        DataRequired(),
+        Length(min=3, max=150)
+    ])
+    submit = SubmitField('Update Username')
+
+    def validate_new_username(self, new_username):
+        user = User.query.filter_by(username=new_username.data).first()
+        if user:
+            raise ValidationError('This username is already taken. Please choose a different one.')
 
 class ChangePasswordForm(FlaskForm):
     current_password = PasswordField(
@@ -19,7 +32,7 @@ class ChangePasswordForm(FlaskForm):
         ]
     )
     submit = SubmitField('Change Password')
-    
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])

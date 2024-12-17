@@ -1,59 +1,320 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
+.title-header {
+    border-bottom: 1px solid #ddd;
+
+    padding: 10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: white;
+
     margin: 0;
-    padding: 0;
 }
 
+.logo {
+    max-height: 30pt;
+}
+
+.logotext {
+    font-family: "Oswald", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+
+    margin: 0;
+
+    color: #0050ac;
+}
+
+footer {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background-color: white;
+
+    color: black;
+
+    /* extend to bottom */
+    
+    box-shadow: 0 50vh 0 50vh white;
+}
+
+.login-container {
+    padding: 100px 0;
+}
+
+.login-field {
+    text-align: left;
+    width: 50%;
+    margin: auto;
+}
+
+input {
+    border: 1px solid black;
+    font-size: 10pt;
+    height: 15pt;
+    border-radius: 2px;
+}
+
+.section-header {
+    text-align: center;
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid gray;
+}
+
+/* Center the main container on the page */
 .container {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background: #ffffff;
+    background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+    color: black;
 }
 
-.chat-container {
-    margin-top: 20px;
+html, body, .page-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    /* default font */
+    font-family: "Inter", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+
+    background-color: #10263c;
+
+    color: white;
+}
+
+#emoji-picker-container {
+    text-align: left;
+    position: absolute;
+    z-index: 10;
+}
+
+.container a {
+    color: #0050ac;
+}
+
+a {
+    color: #ccc;
+}
+
+/* Headings and general text alignment */
+h1, h2 {
+    text-align: center;
+}
+
+.nav-container {
+    width: 100%;
+    padding: 5px 0;
+
+    background-color: #eee;
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    border-bottom: 1px solid gray;
+}
+
+.bar-username {
+    color: black;
+}
+
+.name-area {
+    padding: 0px 10px;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+/* Navigation bar styling */
+nav {
+    padding: 0px 10px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #007bff !important;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+/* Drop area styling */
+.drop-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.drop-area.dragging {
+    border-color: #0066cc;
+    background-color: #e6f7ff;
+}
+
+.post-textbox {
+    display: block;
+    width: 90%;
+    margin: 10px auto;
+    height: 100px;
+    padding: 10px;
+    font-size: 10pt;
+}
+
+/* Style for forms and inputs */
+form {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form .content-editable {
     border: 1px solid #ccc;
     padding: 10px;
-    width: 300px;
+    min-height: 100px;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    
+}
+
+.btn {
+    text-decoration: none;
+    padding: 10px;
+    font-size: 10pt;
+    background-color: #007bff;
+    border: none;
+    color: white !important;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Center the entire "All Public Posts" section */
+.all-public-posts {
+    margin-top: 20px;
+}
+
+.all-public-posts ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto; /* Center-align the entire list container */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Ensure all list items are centered */
+}
+
+.all-public-posts ul li {
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
     background-color: #f9f9f9;
+    width: 100%; /* Set width to align posts uniformly */
+    max-width: 600px; /* Limit width for better design */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for better aesthetics */
+}
+
+/* Center form elements like buttons and inputs */
+.center-form-elements {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Align items in the middle */
+    gap: 10px;          /* Add spacing between elements */
+}
+
+.friend-list-item {
+    list-style-type: none;
+    list-style: none;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 10px;
+
+    display: flex;
+    align-items: center;
+
+    height: 50px;
+
+    gap: 20px;
+}
+
+.watch-party-item {
+    list-style-type: none;
+    list-style: none;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 10px;
+
+    display: flex;
+    align-items: center;
+
+    height: 50px;
+
+    gap: 20px;
+}
+
+.profile-img {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-position: center;
+    background-size: cover;
 }
 
 .chat-box {
-    height: 200px;
+    display: flex;
+    flex-direction: column-reverse;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    height: 60vh;
     overflow-y: scroll;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    padding: 5px;
-    background-color: #fff;
-}
-
-button {
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
     padding: 10px;
-    cursor: pointer;
-    border-radius: 5px;
 }
 
-button:hover {
-    background-color: #0056b3;
+.chat-message {
+    padding: 0;
+    margin: 0;
+    height: 20pt;
+    font-size: 11pt
 }
-
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-    padding: 5px 10px;
-    text-decoration: none;
-    border-radius: 5px;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    color: white;
-}
-

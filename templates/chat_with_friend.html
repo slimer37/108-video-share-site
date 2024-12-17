@@ -1,15 +1,32 @@
-<!-- templates/chat_with_friend.html -->
-<h1>Chat with {{ friend.username }}</h1>
+{% extends 'logged_in.html' %}
 
-<div class="chat-box">
-    {% for message in messages %}
-        <p><strong>{{ message.sender.username }}:</strong> {{ message.message }} <small>{{ message.timestamp }}</small></p>
-    {% endfor %}
+{% block title %}Message {{ friend.username }}{% endblock %}
+
+{% block inner %}
+
+<div class="container">
+    <h3 class="section-header" style="text-align: left; display: flex; gap: 10px">
+        {% if friend.profile_photo %}
+            <div style="background-image: url('{{ friend.profile_photo }}')" title="Profile Photo" class="profile-img"></div>
+        {% else %}
+            <img src="{{ url_for('static', filename='img/noprofile.svg') }}" alt="Profile Photo" class="profile-img">
+        {% endif %}
+
+        {{ friend.username }}'s Chat
+    </h3>
+
+    <div class="chat-box">
+        {% for message in messages %}
+            <p class="chat-message"><strong>{{ message.sender.username }}:</strong> {{ message.message }} <small style="color: gray; font-size: 7pt">{{ message.timestamp.strftime('%Y-%m-%d %I:%M %p') }}</small></p>
+        {% else %}
+            <p>No messages yet. Start the conversation!</p>
+        {% endfor %}
+    </div>
+
+    <form method="POST" style="display: flex; width: 100%; align-items: center; gap: 10px;">
+        <input type="text" name="message" placeholder="Type a message..." required style="height: 30px; flex: 1;">
+        <button type="submit" class="btn">Send</button>
+    </form>
 </div>
 
-<form method="POST">
-    <input type="text" name="message" placeholder="Type a message..." required>
-    <button type="submit">Send</button>
-</form>
-
-<a href="{{ url_for('direct_messages') }}">Back to Direct Messages</a>
+{% endblock %}

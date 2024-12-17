@@ -1,37 +1,50 @@
-{% extends 'base.html' %}
+{% extends 'logged_in.html' %}
 
 {% block title %}Dashboard{% endblock %}
 
-{% block content %}
-<h2>
-    Welcome, {{ user.username }}!
-    <!-- Button for Account Settings -->
-    <a href="{{ url_for('account_settings') }}" class="btn btn-primary" style="margin-left: 10px;">Account Settings</a>
-</h2>
+{% block inner %}
 
-<!-- Navigation Tabs -->
-<nav>
-    <a href="{{ url_for('dashboard') }}">Dashboard</a>
-    <a href="{{ url_for('watch_party') }}">Watch Party</a>
-    <a href="{{ url_for('friends') }}">Friends</a>
-    <a href="{{ url_for('direct_messages') }}">Direct Messages</a>
-    <a href="{{ url_for('group_chats') }}">Group Chats</a>
-    <a href="{{ url_for('available_rooms') }}">Join Room</a>
-    <a href="{{ url_for('logout') }}">Logout</a>
-</nav>
+<div style="display: flex; align-items: fill;">
+    <div class="container" style="width: 30%">
+        <h3 class="section-header">New Post</h3>
+        <form id="postForm" method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <textarea class="post-textbox" id="content" name="content" placeholder="Tell the world something!" rows="3"></textarea>
+            
+            <div class="center-form-elements" style="height: 30px;">
+                <div>
+                    <!-- Emoji Picker Trigger Button -->
+                    <button type="button" id="emoji-btn" class="btn" style="height: 100%;">😀</button>
+                </div>
+                
+                <div>
+                    <label for="imageInput" class="btn" style="margin:0;">Attach Image</label>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+                </div>
 
-<h3>Create a Post</h3>
-<form id="postForm" method="POST" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
-    <div>
-        <label for="content">Content</label>
-        <div id="contentEditable" class="content-editable" contenteditable="true" placeholder="Write something here..."></div>
-        <textarea id="content" name="content" hidden></textarea>
+                {{ form.is_public.label }} {{ form.is_public }}
+                
+                <button type="submit" id="postButton" class="btn">Post</button>
+            </div>
+            
+            <div id="emoji-picker-container"></div>
+            
+        </form>
     </div>
-
-    <div>
-        <label for="imageInput" class="btn btn-secondary">Choose an Image</label>
-        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    
+    <div class="container" style="flex:1">
+        <h3 class="all-public-posts section-header">Feed</h3>
+        <div class="all-public-posts">
+            <ul>
+                {% for post in posts %}
+                <li>
+                    <strong>{{ post.user.username }}:</strong>
+                    <div>{{ post.content|safe }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
     
     <button type="submit" id="postButton">Post</button>
@@ -49,95 +62,86 @@
 
 <!-- JavaScript for handling paste, drag-and-drop, and file input events -->
 <script>
-    const contentEditable = document.getElementById("contentEditable");
-    const hiddenTextarea = document.getElementById("content");
-    const imageInput = document.getElementById("imageInput");
+    document.addEventListener("DOMContentLoaded", () => {
+        const hiddenTextarea = document.getElementById("content");
+        const imageInput = document.getElementById("imageInput");
+        const emojiButton = document.getElementById("emoji-btn");
+        const pickerContainer = document.getElementById("emoji-picker-container");
 
-    // Handle paste events
-    contentEditable.addEventListener("paste", async (event) => {
-        event.preventDefault();
-        const clipboardData = event.clipboardData || window.clipboardData;
-        const items = clipboardData.items;
+        // Image Upload Handling
+        if (imageInput) {
+            imageInput.addEventListener("change", async (event) => {
+                const files = event.target.files;
+                for (let file of files) {
+                    if (file.type.startsWith("image/")) {
+                        await handleImageUpload(file);
+                    }
+                }
+            });
+        }
 
-        for (let item of items) {
-            if (item.type.startsWith("image/")) {
-                const file = item.getAsFile();
-                await handleImageUpload(file);
-            } else {
-                const text = clipboardData.getData("text");
-                document.execCommand("insertText", false, text);
+        async function handleImageUpload(file) {
+            const formData = new FormData();
+            formData.append("image", file);
+
+            try {
+                const response = await fetch("/upload-image", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    hiddenTextarea.value += `\n<img src="${data.image_url}" />`;
+                } else {
+                    alert("Failed to upload image.");
+                }
+            } catch (error) {
+                console.error("Image upload error:", error);
             }
         }
-    });
 
-    // Handle drag-and-drop events
-    contentEditable.addEventListener("dragover", (event) => {
-        event.preventDefault();
-        contentEditable.classList.add("drag-over");
-    });
+        // PicMo Emoji Picker
+        // Check for necessary elements
+    if (!pickerContainer || !emojiButton || !hiddenTextarea) {
+        console.error("Required elements not found!");
+        return;
+    }
 
-    contentEditable.addEventListener("dragleave", () => {
-        contentEditable.classList.remove("drag-over");
-    });
+    // Initialize PicMo Emoji Picker
+    let pickerInstance = null;
 
-    contentEditable.addEventListener("drop", async (event) => {
-        event.preventDefault();
-        contentEditable.classList.remove("drag-over");
-
-        const files = event.dataTransfer.files;
-        for (let file of files) {
-            if (file.type.startsWith("image/")) {
-                await handleImageUpload(file);
-            }
-        }
-    });
-
-    // Handle file input events
-    imageInput.addEventListener("change", async (event) => {
-        const files = event.target.files;
-        for (let file of files) {
-            if (file.type.startsWith("image/")) {
-                await handleImageUpload(file);
-            }
-        }
-    });
-
-    // Function to upload the image to the server and insert it into the contentEditable div
-    async function handleImageUpload(file) {
-        const formData = new FormData();
-        formData.append("image", file);
-
-        // Upload the image to the server
-        const response = await fetch("/upload-image", {
-            method: "POST",
-            body: formData,
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const imageUrl = data.image_url;
-
-            // Insert the image into the contentEditable div
-            const img = document.createElement("img");
-            img.src = imageUrl;
-            img.style.maxWidth = "300px";
-            img.style.margin = "10px 0";
-            contentEditable.appendChild(img);
-
-            // Optionally, add the image URL to the hidden textarea
-            hiddenTextarea.value += `<img src="${imageUrl}" />\n`;
+    // Function to toggle the picker
+    function toggleEmojiPicker() {
+        if (pickerInstance) {
+            // If picker exists, remove it
+            pickerInstance.destroy();
+            pickerInstance = null;
         } else {
-            alert("Failed to upload image.");
+            // Create a new picker instance
+            pickerInstance = picmo.createPicker({
+                rootElement: pickerContainer,
+                emojiSize: '1.5rem',
+            });
+
+            // Handle emoji selection
+            pickerInstance.addEventListener("emoji:select", (event) => {
+                const cursorPos = hiddenTextarea.selectionStart;
+                const text = hiddenTextarea.value;
+
+                hiddenTextarea.value = text.slice(0, cursorPos) + event.emoji + text.slice(cursorPos);
+                hiddenTextarea.focus();
+            });
         }
     }
 
-    // Sync contentEditable div with the hidden textarea
-    document.getElementById("postButton").addEventListener("click", () => {
-        hiddenTextarea.value = contentEditable.innerHTML; // Send the full HTML to the backend
+    // Attach click event to the emoji button
+    emojiButton.addEventListener("click", toggleEmojiPicker);
     });
 </script>
 
-<!-- CSS to style the content-editable div -->
+
+<!-- CSS for contentEditable -->
 <style>
     .content-editable {
         border: 1px solid #ccc;
@@ -149,25 +153,10 @@
         overflow-y: auto;
     }
 
-    .content-editable.drag-over {
-        border-color: #007bff;
-        background-color: #e6f7ff;
-    }
-
-    .content-editable img {
-        display: block;
-        max-width: 100%;
-        margin: 10px 0;
-    }
-
     .content-editable:focus {
         outline: none;
         border-color: #007bff;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    }
-
-    #imageInput {
-        display: none;
     }
 
     label[for="imageInput"] {
@@ -176,11 +165,9 @@
         background-color: #007bff;
         padding: 5px 10px;
         border-radius: 5px;
-        text-align: center;
         display: inline-block;
         margin-bottom: 10px;
     }
-
     label[for="imageInput"]:hover {
         background-color: #0056b3;
     }

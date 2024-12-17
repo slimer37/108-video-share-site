@@ -1,15 +1,32 @@
-{% extends 'base.html' %}
+{% extends 'logged_in.html' %}
 
 {% block title %}Account Settings{% endblock %}
 
-{% block content %}
+{% block inner %}
 <h2>Account Settings</h2>
 
-<div>
-    <a href="{{ url_for('change_password') }}" class="btn btn-secondary">Change Password</a>
-</div>
-
-<div>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+<div class="container">
+    <div>
+        {% if current_user.profile_photo %}
+            <p>Current profile picture:</p>
+            <div class="profile-img" style="width: 100px; height: 100px; background-image: url('{{ current_user.profile_photo }}');" title="Profile Photo"></div>
+        {% else %}
+            <p>You haven't uploaded a profile picture yet.</p>
+        {% endif %}
+    </div>
+    
+    <form action="{{ url_for('upload_profile_photo') }}" method="POST" enctype="multipart/form-data">
+        <label for="profile_photo">Upload a new profile photo:&nbsp;</label>
+        <div style="display: inline-flex">
+            <input type="file" id="profile_photo" name="profile_photo" accept="image/*" style="height: 25px; vertical-align: middle;">
+            <button type="submit" class="btn" style="height: 25px; padding: 0 5px; margin-left: 5px;">Upload</button>
+        </div>
+    </form>
+    
+    <div>
+        <a href="{{ url_for('change_username') }}" class="btn">Change Username</a>
+        <a href="{{ url_for('change_password') }}" class="btn">Change Password</a>
+        <a href="{{ url_for('dashboard') }}" class="btn">Back to Dashboard</a>
+    </div>
 </div>
 {% endblock %}

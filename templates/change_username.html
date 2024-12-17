@@ -1,0 +1,23 @@
+{% extends 'logged_in.html' %}
+
+{% block title %}Change Username{% endblock %}
+
+{% block inner %}
+<div class="container">
+    <h2 class="section-header">Change Username</h2>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="login-field">
+            {{ form.new_username.label }}
+            {{ form.new_username(style="width:100%") }}
+        </div>
+
+        <br>
+
+        <button type="submit" class="btn" style="width: 50%; margin: auto; display: block">Update Username</button>
+    </form>
+
+    <a href="{{ url_for('account_settings') }}" class="btn btn-secondary mt-3">Back to Account Settings</a>
+</div>
+{% endblock %}
