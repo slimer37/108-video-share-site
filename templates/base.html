@@ -16,7 +16,7 @@
     <div class="page-container">
         <header class="title-header">
             <h1 class="logotext">Infinihall</h1>
-            <img class="logo" src="static/img/logo2.svg">
+            <img class="logo" src="{{ url_for('static', filename='img/logo2.svg') }}">
         </header>
         <main class="main-content">
             {% block content %}{% endblock %}
