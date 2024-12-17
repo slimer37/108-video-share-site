@@ -119,12 +119,26 @@ def home():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
+        # Check if the username or email already exists
+        existing_user = User.query.filter(
+            (User.username == form.username.data) | (User.email == form.email.data)
+        ).first()
+
+        if existing_user:
+            if existing_user.username == form.username.data:
+                flash('Username is already taken. Please choose a different one.', 'danger')
+            if existing_user.email == form.email.data:
+                flash('Email is already in use. Please use a different email.', 'danger')
+            return render_template('register.html', form=form)
+
+        # Hash the password and create a new user
         hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        flash('Registration successful! Please login.')
+        flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
+
     return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
