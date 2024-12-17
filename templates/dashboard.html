@@ -4,49 +4,51 @@
 
 {% block inner %}
 
-<div class="container">
-
-    <h3 class="section-header">New Post</h3>
-    <form id="postForm" method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        
-        <textarea class="post-textbox" id="content" name="content" placeholder="Tell the world something!" rows="3"></textarea>
-        
-        <div class="center-form-elements">
-            <div>
-                <!-- Emoji Picker Trigger Button -->
-                <button type="button" id="emoji-btn" class="btn" style="height: 100%;">😀</button>
+<div style="display: flex; align-items: fill;">
+    <div class="container" style="width: 30%">
+        <h3 class="section-header">New Post</h3>
+        <form id="postForm" method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <textarea class="post-textbox" id="content" name="content" placeholder="Tell the world something!" rows="3"></textarea>
+            
+            <div class="center-form-elements">
+                <div>
+                    <!-- Emoji Picker Trigger Button -->
+                    <button type="button" id="emoji-btn" class="btn" style="height: 100%;">😀</button>
+                </div>
+                
+                <label for="imageInput" class="btn btn-secondary">Attach Image</label>
+                <input type="file" id="imageInput" accept="image/*" style="display: none;" />
             </div>
             
-            <label for="imageInput" class="btn btn-secondary">Attach Image</label>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;" />
-        </div>
-        
-        <!-- Root container for PicMo Picker -->
-        <div id="emoji-picker-container"></div>
-        
-        <div class="center-form-elements">
-            {{ form.is_public.label }} {{ form.is_public }}
+            <!-- Root container for PicMo Picker -->
+            <div id="emoji-picker-container"></div>
             
-            <button type="submit" id="postButton" class="btn btn-primary">Post</button>
+            <div class="center-form-elements">
+                {{ form.is_public.label }} {{ form.is_public }}
+                
+                <button type="submit" id="postButton" class="btn btn-primary">Post</button>
+            </div>
+            
+        </form>
+    </div>
+    
+    <div class="container" style="flex:1">
+        <h3 class="all-public-posts section-header">Feed</h3>
+        <div class="all-public-posts">
+            <ul>
+                {% for post in posts %}
+                <li>
+                    <strong>{{ post.user.username }}:</strong>
+                    <div>{{ post.content|safe }}</div>
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        
-    </form>
-</div>
-
-<div class="container">
-    <h3 class="all-public-posts section-header">Feed</h3>
-    <div class="all-public-posts">
-        <ul>
-            {% for post in posts %}
-            <li>
-                <strong>{{ post.user.username }}:</strong>
-                <div>{{ post.content|safe }}</div>
-            </li>
-            {% endfor %}
-        </ul>
     </div>
 </div>
+
     
 <!-- JavaScript -->
 <script>

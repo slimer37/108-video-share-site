@@ -179,9 +179,10 @@ nav a:hover {
 }
 
 .post-textbox {
-    width: 100%;
+    display: block;
+    width: 90%;
+    margin: 10px auto;
     height: 100px;
-    margin-bottom: 10px;
     padding: 10px;
     font-size: 10pt;
 }
