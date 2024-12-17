@@ -10,6 +10,7 @@ from models import db, User, Post, WatchParty, FriendRequest, DirectMessage, Cha
 from forms import ChangePasswordForm, LoginForm, RegisterForm, PostForm, WatchPartyForm
 from admin_routes import admin_bp, block_banned
 import bleach
+from PIL import Image
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -47,7 +48,15 @@ def upload_image():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
+
+        # Resize image if it's larger than 512 pixels
+        image = Image.open(file)
+        max_size = (512, 512)
+        image.thumbnail(max_size)
+
+        # Save the resized image
+        image.save(filepath)
+
         image_url = f"/static/uploads/{filename}"
         return jsonify({"image_url": image_url}), 200
 
