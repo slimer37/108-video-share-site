@@ -1,0 +1,31 @@
+<!-- templates/chat_with_group.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Group Chat: {{ group.name }}</title>
+</head>
+<body>
+    <h1>Group Chat: {{ group.name }}</h1>
+
+    <!-- Invite Friends Link -->
+    <a href="{{ url_for('invite_to_group', group_id=group.id) }}">Invite Friends to Group</a>
+
+    <!-- Group Messages -->
+    <div class="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+        {% for message in messages %}
+            <p><strong>{{ message.sender.username }}:</strong> {{ message.message }}</p>
+        {% else %}
+            <p>No messages yet. Start the conversation!</p>
+        {% endfor %}
+    </div>
+
+    <!-- Message Input -->
+    <form action="{{ url_for('chat_with_group', group_id=group.id) }}" method="POST" style="margin-top: 20px;">
+        <input type="text" name="message" placeholder="Type a message..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <a href="{{ url_for('group_chats') }}">Back to Group Chats</a>
+</body>
+</html>
