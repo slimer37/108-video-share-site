@@ -303,9 +303,18 @@ form .content-editable {
 }
 
 .chat-box {
+    display: flex;
+    flex-direction: column-reverse;
     border: 1px solid #ccc;
     border-radius: 5px;
     height: 60vh;
     overflow-y: scroll;
     padding: 10px;
+}
+
+.chat-message {
+    padding: 0;
+    margin: 0;
+    height: 20pt;
+    font-size: 11pt
 }

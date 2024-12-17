@@ -445,7 +445,7 @@ def chat_with_friend(friend_id):
     messages = DirectMessage.query.filter(
         ((DirectMessage.sender_id == current_user.id) & (DirectMessage.receiver_id == friend_id)) |
         ((DirectMessage.sender_id == friend_id) & (DirectMessage.receiver_id == current_user.id))
-    ).order_by(DirectMessage.timestamp).all()
+    ).order_by(DirectMessage.timestamp.desc()).all()
 
     if request.method == 'POST':
         message = request.form['message']
@@ -479,7 +479,7 @@ def chat_with_group(group_id):
         db.session.commit()
         return redirect(url_for('chat_with_group', group_id=group_id))
 
-    messages = GroupMessage.query.filter_by(group_id=group_id).order_by(GroupMessage.timestamp.asc()).all()
+    messages = GroupMessage.query.filter_by(group_id=group_id).order_by(GroupMessage.timestamp.desc()).all()
     return render_template('chat_with_group.html', user=current_user, group=group, messages=messages)
 
 @app.route('/create-group', methods=['GET', 'POST'])
