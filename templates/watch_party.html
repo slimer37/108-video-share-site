@@ -8,17 +8,17 @@
     <!-- Editable Watch Party Name Section -->
     <div class="watch-party-header">
         <h1 id="party-name">Watch Party: {{ party.name }}</h1>
-        <button class="btn btn-secondary" id="editNameBtn">Edit Name</button>
-    </div>
-
-    <div id="editNameForm" style="display: none; margin-top: 10px;">
-        <input type="text" id="newNameInput" placeholder="Enter new party name" value="{{ party.name }}">
-        <button class="btn btn-success" id="saveNameBtn">Save</button>
-        <button class="btn btn-danger" id="cancelEditBtn">Cancel</button>
     </div>
 
     <!-- Room Controls -->
     <div class="room-controls" style="margin-bottom: 20px;">
+        <div id="editNameForm" style="display: none; margin-bottom: 10px;">
+            <input type="text" id="newNameInput" placeholder="Enter new party name" value="{{ party.name }}">
+            <button class="btn btn-success" id="saveNameBtn">Save</button>
+            <button class="btn btn-danger" id="cancelEditBtn">Cancel</button>
+        </div>
+        <button class="btn btn-secondary" id="editNameBtn">Edit Name</button>
+
         <button class="btn" id="hostRoomBtn">Host Room</button>
         <button class="btn" id="copyLinkBtn">Copy Invite Link</button>
     </div>
@@ -36,10 +36,10 @@
 
     <!-- Chat Section -->
     <div class="chat-container" style="margin-top: 20px;">
-        <h3>Chat</h3>
+        <h3 class="section-header">Party Chat</h3>
         <div id="chat-box" class="chat-box" style="height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
         <input type="text" id="message" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
+        <button class="btn" onclick="sendMessage()">Send</button>
     </div>
 </div>
 
