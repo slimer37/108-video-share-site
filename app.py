@@ -384,6 +384,12 @@ def remove_friend(user_id):
 @login_required
 def send_friend_request(receiver_id):
     receiver = User.query.get_or_404(receiver_id)
+
+    # Prevent sending friend requests to admin users
+    if receiver.is_admin:
+        flash('You cannot send a friend request to an admin.')
+        return redirect(url_for('friends'))
+
     existing_request = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=receiver_id).first()
 
     if existing_request:
@@ -529,35 +535,6 @@ def invite_to_group(group_id):
     friends_not_in_group = [friend for friend in current_user.friends if friend not in group.members]
     
     return render_template('invite_to_group.html', group=group, friends=friends_not_in_group)
-
-@app.route('/join-room/<int:room_id>')
-@login_required
-def join_room_page(room_id):
-    party = WatchParty.query.get_or_404(room_id)
-    if party.is_private and current_user not in party.host.friends:
-        flash('This room is private. Only friends can join.')
-        return redirect(url_for('dashboard'))
-    return render_template('watch_party.html', party=party)
-
-@app.route('/send-friend-request/<int:receiver_id>', methods=['POST'])
-@login_required
-def send_friend_request(receiver_id):
-    receiver = User.query.get_or_404(receiver_id)
-
-    # Prevent sending friend requests to admin users
-    if receiver.is_admin:
-        flash('You cannot send a friend request to an admin.')
-        return redirect(url_for('friends'))
-
-    existing_request = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=receiver_id).first()
-    if existing_request:
-        flash('Friend request already sent.')
-    else:
-        friend_request = FriendRequest(sender_id=current_user.id, receiver_id=receiver_id)
-        db.session.add(friend_request)
-        db.session.commit()
-        flash(f'Friend request sent to {receiver.username}.')
-    return redirect(url_for('friends'))
 
 @app.route('/join-room/<int:room_id>')
 @login_required
