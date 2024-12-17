@@ -184,7 +184,7 @@ def logout():
 @app.route('/account-settings')
 @login_required
 def account_settings():
-    return render_template('account_settings.html')
+    return render_template('account_settings.html', user=current_user)
 
 @app.route('/change-username', methods=['GET', 'POST'])
 @login_required

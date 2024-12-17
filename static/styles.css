@@ -211,11 +211,12 @@ form .content-editable {
 }
 
 .btn {
+    text-decoration: none;
     padding: 10px;
     font-size: 10pt;
     background-color: #007bff;
     border: none;
-    color: white;
+    color: white !important;
     border-radius: 5px;
     cursor: pointer;
 }
@@ -277,4 +278,6 @@ form .content-editable {
     width: 24px;
     height: 24px;
     border-radius: 50%;
+    background-position: center;
+    background-size: cover;
 }

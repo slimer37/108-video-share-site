@@ -43,7 +43,7 @@
         {% for user in all_users %}
             <li class="friend-list-item">
                 {% if user.profile_photo %}
-                    <img src="{{ user.profile_photo }}" alt="Profile Photo" class="profile-img">
+                    <div style="background-image: url('{{ user.profile_photo }}')" title="Profile Photo" class="profile-img"></div>
                 {% else %}
                     <img src="{{ url_for('static', filename='img/noprofile.svg') }}" alt="Profile Photo" class="profile-img">
                 {% endif %}
