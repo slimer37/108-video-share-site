@@ -9,32 +9,32 @@
     <h3>New Post</h3>
     <form id="postForm" method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <div>
-            <div style="display: flex; align-items: center;">
-                <textarea id="content" name="content" rows="3"></textarea>
-                <!-- Emoji Picker Trigger Button -->
-                <button type="button" id="emoji-btn" class="emoji-button" style="margin-left: 10px;">😀</button>
-            </div>
-            <!-- Root container for PicMo Picker -->
-            <div id="emoji-picker-container" style="position: relative; z-index: 10;"></div>
-        </div>        
-        </div>
+        
+        <textarea id="content" name="content" rows="3"></textarea>
+        
         <div class="center-form-elements">
-            <label for="imageInput" class="btn btn-secondary">Choose an Image</label>
+            <div>
+                <!-- Emoji Picker Trigger Button -->
+                <button type="button" id="emoji-btn" class="btn" style="height: 100%;">😀</button>
+            </div>
+            
+            <label for="imageInput" class="btn btn-secondary">Attach Image</label>
             <input type="file" id="imageInput" accept="image/*" style="display: none;" />
         </div>
         
-        <div class="center-form-elements">
-            {{ form.is_public.label }} {{ form.is_public }}
-        </div>
+        <!-- Root container for PicMo Picker -->
+        <div id="emoji-picker-container" style="position: absolute; z-index: 10;"></div>
         
         <div class="center-form-elements">
+            {{ form.is_public.label }} {{ form.is_public }}
+            
             <button type="submit" id="postButton" class="btn btn-primary">Post</button>
         </div>
         
     </form>
-    
+</div>
 
+<div class="container">
     <h3 class="all-public-posts">All Public Posts</h3>
     <div class="all-public-posts">
         <ul>

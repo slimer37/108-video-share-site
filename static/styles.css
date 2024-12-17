@@ -218,9 +218,9 @@ form .content-editable {
     
 }
 
-form button {
-    width: 100%;
+.btn {
     padding: 10px;
+    font-size: 10pt;
     background-color: #007bff;
     border: none;
     color: white;
@@ -228,39 +228,8 @@ form button {
     cursor: pointer;
 }
 
-form button:hover {
+.btn:hover {
     background-color: #0056b3;
-}
-
-/* Profile photo and username */
-h2 {
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-h2 img {
-    margin-left: 10px;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-}
-
-/* Public posts styling */
-ul {
-    list-style-type: none;
-    padding: 0;
-    width: 100%;
-    max-width: 600px;
-}
-
-ul li {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
 }
 
 /* Center the entire "All Public Posts" section */
@@ -296,27 +265,5 @@ ul li {
     display: flex;
     justify-content: center; /* Center horizontally */
     align-items: center;     /* Align items in the middle */
-    margin: 10px 0;          /* Add spacing between elements */
-   
-}
-
-/* Style for the emoji picker button */
-.emoji-button {
-    font-size: 0.8rem;      /* Smaller text size for the emoji */
-    padding: 2px 6px;       /* Smaller padding for a smaller button */
-    height: 40px;           /* Adjust the button height */
-    width: 40px;            /* Adjust the button width */
-    line-height: 1;         /* Adjust line spacing */
-    display: flex;          /* Align content (emoji) properly */
-    align-items: center;
-    justify-content: center;
-    background-color: #007bff; /* Button color */
-    color: #fff;            /* Text color */
-    border: none;           /* Remove border */
-    /*border-radius: 50%;     /* Optional: Make it circular */
-    cursor: pointer;        /* Pointer cursor for better UX */
-}
-
-.emoji-button:hover {
-    background-color: #0056b3; /* Slightly darker on hover */
+    gap: 10px;          /* Add spacing between elements */
 }
