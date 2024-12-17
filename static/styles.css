@@ -103,26 +103,6 @@ form {
     text-align: center; /* Left-align forms */
 }
 
-/* Center the "All Public Posts" container */
-ul {
-    list-style-type: none; /* Remove bullet points */
-    padding: 0;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto; /* Center the container horizontally */
-    text-align: center; /* Center-align the text */
-}
-
-/* Style individual list items */
-ul li {
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    text-align: center; /* Center-align the text inside the box */
-}
-
 .nav-container {
     width: 100%;
     padding: 5px 0;
