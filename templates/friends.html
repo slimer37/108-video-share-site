@@ -45,7 +45,7 @@
                 {% if user.profile_photo %}
                     <img src="{{ user.profile_photo }}" alt="Profile Photo" class="profile-img">
                 {% else %}
-                    <img src="static/img/noprofile.svg" alt="Profile Photo" class="profile-img">
+                    <img src="{{ url_for('static', filename='img/noprofile.svg') }}" alt="Profile Photo" class="profile-img">
                 {% endif %}
                 {{ user.username }}
                 <form action="{{ url_for('send_friend_request', receiver_id=user.id) }}" method="POST" style="display:inline;">
