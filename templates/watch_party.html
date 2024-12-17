@@ -5,7 +5,17 @@
 {% block inner %}
 
 <div class="container">
-    <h1>Watch Party: {{ party.name }}</h1>
+    <!-- Editable Watch Party Name Section -->
+    <div class="watch-party-header">
+        <h1 id="party-name">Watch Party: {{ party.name }}</h1>
+        <button class="btn btn-secondary" id="editNameBtn">Edit Name</button>
+    </div>
+
+    <div id="editNameForm" style="display: none; margin-top: 10px;">
+        <input type="text" id="newNameInput" placeholder="Enter new party name" value="{{ party.name }}">
+        <button class="btn btn-success" id="saveNameBtn">Save</button>
+        <button class="btn btn-danger" id="cancelEditBtn">Cancel</button>
+    </div>
 
     <!-- Room Controls -->
     <div class="room-controls" style="margin-bottom: 20px;">
@@ -48,6 +58,56 @@
     const muteMicBtn = document.getElementById('muteMicBtn');
     const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
+    // Editable Watch Party Name Elements
+    const editNameBtn = document.getElementById('editNameBtn');
+    const editNameForm = document.getElementById('editNameForm');
+    const partyName = document.getElementById('party-name');
+    const newNameInput = document.getElementById('newNameInput');
+    const saveNameBtn = document.getElementById('saveNameBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+    // Show the edit form
+    editNameBtn.addEventListener('click', () => {
+        editNameForm.style.display = 'block';
+        editNameBtn.style.display = 'none';
+    });
+
+    // Cancel editing
+    cancelEditBtn.addEventListener('click', () => {
+        editNameForm.style.display = 'none';
+        editNameBtn.style.display = 'inline-block';
+    });
+
+    // Save the new name
+    saveNameBtn.addEventListener('click', async () => {
+        const newName = newNameInput.value.trim();
+        if (newName) {
+            try {
+                const response = await fetch('/update-watch-party-name/{{ party.id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ new_name: newName }),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    partyName.textContent = `Watch Party: ${result.new_name}`;
+                    editNameForm.style.display = 'none';
+                    editNameBtn.style.display = 'inline-block';
+                } else {
+                    alert(result.error || 'Error updating the watch party name');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        } else {
+            alert('Name cannot be empty.');
+        }
+    });
+
     // Ensure PeerConnection exists only once
     function createPeerConnection() {
         if (peerConnection) return;
@@ -75,9 +135,12 @@
     // Join the room
     socket.emit('join', { room: room });
 
+    // Enhanced chat to avoid XSS
     socket.on('message', (msg) => {
         const chatBox = document.getElementById('chat-box');
-        chatBox.innerHTML += `<p>${msg}</p>`;
+        const msgElement = document.createElement('p');
+        msgElement.textContent = msg; // Escapes any potential HTML content
+        chatBox.appendChild(msgElement);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 

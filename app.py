@@ -307,6 +307,23 @@ def watch_party():
 
     return render_template('watch_party.html', user=current_user, form=form, party=party)
 
+@app.route('/update-watch-party-name/<int:party_id>', methods=['POST'])
+@login_required
+def update_watch_party_name(party_id):
+    party = WatchParty.query.get_or_404(party_id)
+    if party.host_id != current_user.id:
+        return jsonify({"error": "You are not authorized to edit this watch party."}), 403
+
+    data = request.get_json()
+    new_name = data.get("new_name", "").strip()
+
+    if not new_name:
+        return jsonify({"error": "Watch party name cannot be empty."}), 400
+
+    party.name = new_name
+    db.session.commit()
+    return jsonify({"new_name": new_name}), 200
+
 # SocketIO Events for Real-Time Chat
 @socketio.on('join')
 def handle_join(data):
@@ -324,7 +341,12 @@ def handle_leave(data):
 def handle_message(data):
     room = data['room']
     message = data['message']
-    send(f"{current_user.username}: {message}", to=room)
+
+    # Sanitize the message to prevent XSS
+    allowed_tags = ['b', 'i', 'u', 'strong', 'em', 'p', 'br']
+    sanitized_message = bleach.clean(message, tags=allowed_tags)
+
+    send(f"{current_user.username}: {sanitized_message}", to=room)
 
 @socketio.on('hostRoom')
 def handle_host_room(data):
