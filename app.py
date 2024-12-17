@@ -304,10 +304,15 @@ def handle_ice_candidate(data):
 @block_banned
 def friends():
     friends_list = current_user.friends
-    all_users = User.query.filter(User.id != current_user.id, User.is_admin == False).all()
-    return render_template('friends.html', friends=friends_list, all_users=all_users)
-    # Exclude users who are already friends
-    all_users = User.query.filter(User.id != current_user.id, ~User.friends.any(id=current_user.id)).all()
+
+    # Exclude users who are already friends or have pending friend requests
+    all_users = User.query.filter(
+        User.id != current_user.id,
+        ~User.friends.any(id=current_user.id),
+        ~User.sent_requests.any(receiver_id=User.id),
+        ~User.received_requests.any(sender_id=current_user.id)
+    ).all()
+
     return render_template('friends.html', friends=friends_list, all_users=all_users)
 
 @app.route('/add-friend/<int:friend_id>', methods=['POST'])
@@ -367,11 +372,19 @@ def accept_friend_request(request_id):
     friend_request = FriendRequest.query.get_or_404(request_id)
 
     if friend_request.receiver_id == current_user.id:
-        # Add each other as friends
+        # Add each other as friends (mutual friendship)
         sender = User.query.get(friend_request.sender_id)
-        current_user.friends.append(sender)
+        
+        if sender not in current_user.friends:
+            current_user.friends.append(sender)
+        
+        if current_user not in sender.friends:
+            sender.friends.append(current_user)
+        
+        # Delete the friend request after acceptance
         db.session.delete(friend_request)
         db.session.commit()
+        
         flash(f'You are now friends with {sender.username}.')
     else:
         flash('Invalid friend request.')
