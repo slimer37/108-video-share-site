@@ -386,6 +386,7 @@ def friends():
     # Exclude users who are already friends or have pending friend requests
     all_users = User.query.filter(
         User.id != current_user.id,
+        User.is_admin == False,
         ~User.friends.any(id=current_user.id),
         ~User.sent_requests.any(receiver_id=User.id),
         ~User.received_requests.any(sender_id=current_user.id)
