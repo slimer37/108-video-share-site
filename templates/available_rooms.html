@@ -22,18 +22,19 @@
                     <strong>{{ room.name }}</strong>
 
                     {% if room.host.profile_photo %}
-                        <div style="background-image: url('{{ room.host.profile_photo }}')" title="Profile Photo" class="profile-img"></div>
+                        <div style="background-image: url('{{ room.host.profile_photo }}'); width: 35px; height: 35px" title="Profile Photo" class="profile-img"></div>
                     {% else %}
-                        <img src="{{ url_for('static', filename='img/noprofile.svg') }}" alt="Profile Photo" class="profile-img">
+                        <img src="{{ url_for('static', filename='img/noprofile.svg') }}" style="width: 35px; height: 35px" alt="Profile Photo" class="profile-img">
                     {% endif %}
 
                     <div>
                         {{ room.host.username }}
-                        <br>
+                    </div>
+                    <div>
                         {{ room.description or 'No description' }}
                     </div>
 
-                    <a class="btn" href="{{ url_for('join_room_page', room_id=room.id) }}">Join Room</a>
+                    <a class="btn" href="{{ url_for('join_room_page', room_id=room.id) }}" style="margin-left: auto;">Join Room</a>
                 </li>
             {% else %}
                 <li>No rooms found.</li>
