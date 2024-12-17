@@ -267,7 +267,7 @@ def watch_party():
         db.session.add(party)
         db.session.commit()
 
-    return render_template('watch_party.html', form=form, party=party)
+    return render_template('watch_party.html', user=current_user, form=form, party=party)
 
 # SocketIO Events for Real-Time Chat
 @socketio.on('join')
@@ -543,7 +543,7 @@ def join_room_page(room_id):
     if party.is_private and current_user not in party.host.friends:
         flash('This room is private. Only friends can join.')
         return redirect(url_for('available_rooms'))
-    return render_template('watch_party.html', party=party)
+    return render_template('watch_party.html', user=current_user, party=party)
 
 @app.route('/available-rooms')
 @login_required
