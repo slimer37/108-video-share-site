@@ -556,7 +556,7 @@ def available_rooms():
 
     rooms = query.all()
 
-    return render_template('available_rooms.html', rooms=rooms)
+    return render_template('available_rooms.html', user=current_user, rooms=rooms)
 
 @app.route('/add-reaction/<int:post_id>', methods=['POST'])
 @login_required
