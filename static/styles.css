@@ -78,6 +78,12 @@ input {
     color: black;
 }
 
+html, body, .page-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     /* default font */
     font-family: "Inter", serif;
@@ -86,8 +92,6 @@ body {
     font-style: normal;
 
     background-color: #10263c;
-
-    margin: 0;
 
     color: white;
 }
