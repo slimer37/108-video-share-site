@@ -94,7 +94,7 @@ body {
     font-weight: 400;
     font-style: normal;
 
-    background-color: #10263c;
+    background-image: linear-gradient(to right, #172E95, #10263C);
 
     color: white;
 }
